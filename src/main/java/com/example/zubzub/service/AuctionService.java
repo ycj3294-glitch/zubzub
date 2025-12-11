@@ -4,10 +4,13 @@ import com.example.zubzub.repository.AuctionRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -63,5 +66,10 @@ public class AuctionService {
         // WebSocket 브로드캐스트
         messagingTemplate.convertAndSend("/topic/auction." + auction.getAuctionId(), auction);
     }
+
+    public void cleanUp(Authentication authentication) {
+        scheduler.shutdown();
+    }
+
 
 }
