@@ -1,6 +1,5 @@
 package com.example.zubzub.entity;
 
-
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,26 +12,19 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table
-public class Auction {
+public class Item {
     @Id
-    @Column(name="auction_id")
+    @Column(name="item_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    private Long sellerId;
     @Column(nullable = false, length = 50)
     private String itemName;
-
-    @Column(nullable = false)
-    private int startingPrice;
-
-    @Column(nullable = false)
-    private LocalDateTime regDate;
-
-    @PrePersist
-    public void prePersist() {
-        this.regDate = LocalDateTime.now();
-    }
-
-    @Column(nullable = false)
-    private LocalDateTime endDate;
+    private String itemDesc;
+    private Long startPrice;
+    private Long finalPrice;
+    private String itemImg;
+    private String itemStatus;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 }
