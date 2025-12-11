@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter @Setter
 @NoArgsConstructor
-@Table(name = "members") // 테이블명
+@Table(name="members")
 public class Member {
 
     @Id
@@ -20,15 +20,13 @@ public class Member {
     private String email;
 
     @Column(name = "PWD", nullable = false)
-    private String password;
+    private String pwd;
 
     @Column(nullable = false)
     private String nickname;
 
     private String grade;
-
-    private int point;
-
+    private int credit;
     private String profileImg;
 
     @Column(updatable = false)

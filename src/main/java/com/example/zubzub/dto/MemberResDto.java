@@ -1,6 +1,7 @@
 package com.example.zubzub.dto;
 
 
+import com.example.zubzub.entity.Member;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,19 @@ public class MemberResDto {
     private String nickname;
     private String grade;
     private LocalDateTime regDate;
-    private int Credit;
+    private int credit;
     private String profileImg;
+
+
+    public MemberResDto(Member member) {
+        this.id = member.getId();
+        this.email = member.getEmail();
+        this.pwd = member.getPwd();
+        this.nickname = member.getNickname();
+        this.grade = member.getGrade();
+        this.regDate = member.getRegDate();
+        this.credit = member.getCredit();  // or credit
+        this.profileImg = member.getProfileImg();
+    }
 }
+
