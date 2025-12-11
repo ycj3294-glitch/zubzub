@@ -17,6 +17,6 @@ public class MemberResDto {
     private String nickname;
     private String grade;
     private LocalDateTime regDate;
-    private int point;
+    private int Credit;
     private String profileImg;
 }
