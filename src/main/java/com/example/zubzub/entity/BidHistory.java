@@ -21,13 +21,13 @@ public class BidHistory {
     private Long id;
 
     @Column(nullable = false)
-    private Long itemId;
+    private Long auctionId;
 
     @Column(nullable = false)
     private Long memberId;
 
     @Column(nullable = false)
-    private int bidPrice;
+    private int price;
 
     @Column(nullable = false)
     private LocalDateTime bidTime;

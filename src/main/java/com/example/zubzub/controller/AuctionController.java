@@ -1,11 +1,7 @@
 package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.BidHistoryCreateDto;
-import com.example.zubzub.dto.CurrentBidResponseDto;
 import com.example.zubzub.service.AuctionService;
-import com.example.zubzub.service.BidHistoryService;
-import jakarta.servlet.http.HttpSession;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
