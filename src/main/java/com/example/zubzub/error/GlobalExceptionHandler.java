@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -48,5 +49,10 @@ public class GlobalExceptionHandler {
         body.put("timestamp", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
-
+    // localhost 접속시 파비콘 오류좀 해결하려 추가
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<?> handleNoResource(NoResourceFoundException e) {
+        // 정적 리소스 404는 그냥 무시하거나 404만 보내기
+        return ResponseEntity.notFound().build();
+    }
 }
