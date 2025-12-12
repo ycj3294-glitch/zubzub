@@ -5,10 +5,7 @@ import com.example.zubzub.repository.AuctionRepository;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,8 +18,8 @@ public class AuctionController {
     private final AuctionService auctionService;
 
     // 회원 id에 따른 판매내역 반환
-    @GetMapping("/selllist")
-    public ResponseEntity<List<Auction>> sellList(Long id) {
+    @GetMapping("/selllist/{id}")
+    public ResponseEntity<List<Auction>> sellList(@PathVariable("id") Long id) {
         return ResponseEntity.ok(auctionService.sellList(id));
     }
     // 회원 id에 따른 낙찰내역 반환
