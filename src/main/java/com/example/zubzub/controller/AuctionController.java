@@ -1,9 +1,13 @@
 package com.example.zubzub.controller;
 
+import com.example.zubzub.dto.AuctionCreateDto;
 import com.example.zubzub.dto.BidHistoryCreateDto;
+import com.example.zubzub.entity.Auction;
+import com.example.zubzub.service.AuctionBidService;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -14,14 +18,20 @@ import org.springframework.web.bind.annotation.*;
 public class AuctionController {
 
     private final AuctionService auctionService;
+    private final AuctionBidService auctionBidService;
 
-    @GetMapping("/{itemId}")
-    public CurrentBidResponseDto getCurrentBid(@PathVariable Long itemId) {
-        return auctionService.getCurrentBid(itemId);
+    @GetMapping("/{id}")
+    public ResponseEntity<Auction> getAuction(@PathVariable Long id) {
+        return ResponseEntity.ok(auctionService.getAuctionById(id));
     }
 
-    @PostMapping("/{itemId}/bids")
-    public void placeBid(@PathVariable Long itemId, @RequestBody BidHistoryCreateDto dto) {
-        auctionService.placeBid(itemId, dto);
+    @PostMapping()
+    public ResponseEntity<Boolean> createAuction(@RequestBody AuctionCreateDto dto) {
+        return ResponseEntity.ok(auctionService.createAuction(dto));
+    }
+
+    @PostMapping("/{id}/bids")
+    public ResponseEntity<Boolean> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
+        return ResponseEntity.ok(auctionBidService.placeBid(id, dto));
     }
 }

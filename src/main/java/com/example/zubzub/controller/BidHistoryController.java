@@ -5,6 +5,7 @@ import com.example.zubzub.entity.BidHistory;
 import com.example.zubzub.service.BidHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -22,8 +23,8 @@ public class BidHistoryController {
 //    }
 
     @GetMapping("/{id}")
-    public BidHistory get(@PathVariable Long id) {
-        return bidHistoryService.findById(id);
+    public ResponseEntity<BidHistory>  get(@PathVariable Long id) {
+        return ResponseEntity.ok(bidHistoryService.findById(id));
     }
 
 }

@@ -1,14 +1,13 @@
 package com.example.zubzub.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter @Setter @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Builder
 @Table
