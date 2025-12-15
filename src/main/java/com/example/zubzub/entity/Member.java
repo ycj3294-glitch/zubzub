@@ -36,4 +36,6 @@ public class Member {
     public void prePersist() {
         this.regDate = LocalDateTime.now();
     }
+    private boolean active = true;
+
 }

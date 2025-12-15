@@ -18,8 +18,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MemberServiceImpl implements MemberService {
 
+
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public List<MemberResDto> getAll() {
+        return list();
+    }
 
     @Override
     public boolean isNicknameExists(String nickname) {
@@ -123,4 +129,31 @@ public class MemberServiceImpl implements MemberService {
         member.setCredit(member.getCredit() + point);
         memberRepository.save(member);
     }
+    @Override
+    public boolean checkPassword(Long id, String rawPassword) {
+
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        return passwordEncoder.matches(rawPassword, member.getPwd());
+    }
+    @Override
+    public void setActive(Long id, boolean active) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        member.setActive(active);
+        memberRepository.save(member);
+    }
+    @Override
+    public void updateStatus(Long id, boolean active) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        member.setActive(active);
+        memberRepository.save(member);
+    }
+
+
+
 }
+
