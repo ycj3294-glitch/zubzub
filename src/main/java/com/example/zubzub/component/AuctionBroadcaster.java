@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+// 브로드캐스터 컴포넌트 (클래스 대신 컴포넌트로 랩핑)
 @Component
 @RequiredArgsConstructor
 public class AuctionBroadcaster {

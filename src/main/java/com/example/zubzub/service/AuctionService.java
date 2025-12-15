@@ -19,14 +19,18 @@ public class AuctionService {
 
     private final AuctionRepository auctionRepository;
     private final AuctionSchedulerService auctionSchedulerService;
+    // 실시간성을 위한 캐시 사용
     private final ConcurrentHashMap<Long, Auction> cache = new ConcurrentHashMap<>();
 
     // CREATE
     public Boolean createAuction(AuctionCreateDto dto) {
         Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
+        // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
         auction.setItemStatus("경매대기");
+        // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
         try {
+            // 시작 종료 타이머 걸기
             auctionSchedulerService.scheduleAuctionStart(savedAuction);
             auctionSchedulerService.scheduleAuctionEnd(savedAuction);
         } catch (SchedulerException e) {
@@ -44,6 +48,7 @@ public class AuctionService {
 
     // READ (단건 조회)
     public Auction getAuctionById(Long id) {
+        // 캐시에서 먼저 찾고, 없으면 DB에서 조회 후 캐시에 넣어줌
         Auction auction = cache.get(id);
         if (auction == null) {
             try {

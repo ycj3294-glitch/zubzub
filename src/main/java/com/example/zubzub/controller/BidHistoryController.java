@@ -22,9 +22,9 @@ public class BidHistoryController {
 //        return bidHistoryService.save(dto);
 //    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BidHistory>  get(@PathVariable Long id) {
-        return ResponseEntity.ok(bidHistoryService.findById(id));
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<BidHistory>  get(@PathVariable Long id) {
+//        return ResponseEntity.ok(bidHistoryService.findById(id));
+//    }
 
 }

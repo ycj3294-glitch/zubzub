@@ -17,7 +17,9 @@ public class AuctionSchedulerService {
 
     private final Scheduler scheduler;
 
+    // auction.getStartTime()으로 경매시작 타이머 설정
     public void scheduleAuctionStart(Auction auction) throws SchedulerException {
+        // 경매시작시 사용할 로직 할당
         JobDetail jobDetail = JobBuilder.newJob(AuctionStartJob.class)
                 .withIdentity("auctionStartJob-" + auction.getId(), "auctionGroup")
                 .usingJobData("auctionId", auction.getId())
@@ -31,8 +33,9 @@ public class AuctionSchedulerService {
 
         scheduler.scheduleJob(jobDetail, trigger);
     }
-
+    // auction.getEndTime()으로 경매종료 타이머 설정
     public void scheduleAuctionEnd(Auction auction) throws SchedulerException {
+        // 경매종료시 사용할 로직 할당
         JobDetail jobDetail = JobBuilder.newJob(AuctionEndJob.class)
                 .withIdentity("auctionEndJob-" + auction.getId(), "auctionGroup")
                 .usingJobData("auctionId", auction.getId())
@@ -45,12 +48,13 @@ public class AuctionSchedulerService {
         log.info(jobDetail.getKey().getName());
         scheduler.scheduleJob(jobDetail, trigger);
     }
-
+    // auction.getExtendedEndTime()으로 경매종료 타이머 재설정
     public void rescheduleAuctionEnd(Auction auction) throws SchedulerException {
-        TriggerKey triggerKey = new TriggerKey("auctionEndJob-" + auction.getId(), "auctionGroup");
+        // 기존 타이머와 동일한 키 할당
+        TriggerKey triggerKey = new TriggerKey("auctionEndTrigger-" + auction.getId(), "auctionGroup");
 
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("auctionEndTrigger-" + auction.getId(), "auctionGroup")
+                .withIdentity(triggerKey)
                 .startAt(java.sql.Timestamp.valueOf(auction.getExtendedEndTime()))
                 .build();
 

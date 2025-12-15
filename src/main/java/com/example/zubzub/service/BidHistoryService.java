@@ -19,12 +19,13 @@ public class BidHistoryService {
 
     private final BidHistoryRepository bidHistoryRepository;
 
-    // Read (단건 조회)
-    public BidHistory findById(Long id) {
-        return bidHistoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Bid not found"));
-    }
+//    // Read (단건 조회)
+//    public BidHistory findById(Long id) {
+//        return bidHistoryRepository.findById(id)
+//                .orElseThrow(() -> new RuntimeException("Bid not found"));
+//    }
 
+    // 비동기 save 로직
     @Async
     @Retryable(
             retryFor = { RuntimeException.class },

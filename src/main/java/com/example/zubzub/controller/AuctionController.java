@@ -20,16 +20,19 @@ public class AuctionController {
     private final AuctionService auctionService;
     private final AuctionBidService auctionBidService;
 
+    // 경매 하나 보기
     @GetMapping("/{id}")
     public ResponseEntity<Auction> getAuction(@PathVariable Long id) {
         return ResponseEntity.ok(auctionService.getAuctionById(id));
     }
 
+    // 경매 생성
     @PostMapping()
     public ResponseEntity<Boolean> createAuction(@RequestBody AuctionCreateDto dto) {
         return ResponseEntity.ok(auctionService.createAuction(dto));
     }
 
+    // 경매에 입찰하기
     @PostMapping("/{id}/bids")
     public ResponseEntity<Boolean> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
         return ResponseEntity.ok(auctionBidService.placeBid(id, dto));
