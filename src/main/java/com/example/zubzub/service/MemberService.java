@@ -27,6 +27,13 @@ public interface MemberService {
     void updateStatus(Long id, boolean active); // 추가!!
 
     void addPoint(Long memberId, int point);
+        // 회원가입 임시 저장
+        void savePendingMember(MemberSignupReqDto req);
+
+        // 인증 완료 후 DB에 최종 저장/활성화
+        void activateMember(String email);
+
+
 }
 
 

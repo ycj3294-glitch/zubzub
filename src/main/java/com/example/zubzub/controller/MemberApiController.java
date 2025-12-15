@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.zubzub.security.JwtUtil;
+import com.example.zubzub.service.MailService;
 
 @RestController
 @RequestMapping("/api/members")
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberApiController {
 
     private final MemberService memberService;
+    private final MailService mailService;
 
     /**
      * 이메일 중복 체크
@@ -68,13 +71,31 @@ public class MemberApiController {
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<MemberResDto> signup(@RequestBody MemberSignupReqDto req) {
-        Long id = memberService.signup(req);
-        MemberResDto result = memberService.getById(id);
+    public ResponseEntity<String> signupWithMail(@RequestBody MemberSignupReqDto req) {
+        if(memberService.isEmailExists(req.getEmail())) {
+            return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
+        }
 
-        log.info("[API] 회원가입 완료: {}", req.getEmail());
-        return ResponseEntity.ok(result);
+        memberService.savePendingMember(req);
+
+        // MailService 인스턴스로 호출
+        String code = mailService.sendVerificationEmailHtml(req.getEmail());
+        System.out.println("보낼 코드: "+code);
+        String token = JwtUtil.generateToken(req.getEmail(), code);
+
+        return ResponseEntity.ok(token);
     }
+
+    @PostMapping("/signup/verify")
+    public ResponseEntity<Boolean> verifySignupCode(@RequestParam String token, @RequestParam String code) {
+        boolean valid = JwtUtil.validateToken(token, code);
+        if(valid) {
+            memberService.activateMember(JwtUtil.getEmail(token));
+        }
+        return ResponseEntity.ok(valid);
+    }
+
+
 
     /**
      * 로그인

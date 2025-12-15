@@ -10,8 +10,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +24,26 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Map<String, MemberSignupReqDto> pendingMembers = new HashMap<>();
 
+    @Override
+    public void savePendingMember(MemberSignupReqDto req) {
+        pendingMembers.put(req.getEmail(), req); // 임시 저장 (메모리)
+    }
+
+    @Override
+    public void activateMember(String email) {
+        MemberSignupReqDto req = pendingMembers.remove(email);
+        if(req != null) {
+            Member member = new Member();
+            member.setEmail(req.getEmail());
+            member.setPwd(passwordEncoder.encode(req.getPwd()));
+            member.setNickname(req.getNickname());
+            member.setGrade(req.getGrade());
+            member.setProfileImg(req.getProfileImg());
+            memberRepository.save(member);
+        }
+    }
     @Override
     public List<MemberResDto> getAll() {
         return list();
