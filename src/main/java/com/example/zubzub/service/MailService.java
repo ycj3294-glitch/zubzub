@@ -36,24 +36,22 @@ public class MailService {
         return code;
     }
     // HTML 메일 전송
-    public String sendVerificationEmailHtml(String toEmail) {
-        String code = generateCode();
-
+    // 코드 직접 전달
+    public void sendVerificationEmailHtml(String toEmail, String code) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(toEmail);
-            helper.setSubject("회원가입 인증번호 확인");
-            helper.setText("<h1>인증코드</h1><p>인증번호: <b>" + code + "</b></p>", true);
+            helper.setSubject("인증번호");
+            helper.setText("<h1>인증번호</h1><p>인증번호: <b>" + code + "</b></p>", true);
             helper.setFrom("zubzubpq@gmail.com");
 
             mailSender.send(message);
         } catch (MessagingException e) {
             throw new RuntimeException(e);
         }
-
-        return code;
     }
+
 
 }

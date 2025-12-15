@@ -4,6 +4,7 @@ import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.MemberRepository;
+import com.example.zubzub.service.MailService;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 
@@ -25,7 +27,8 @@ public class MemberServiceImpl implements MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final Map<String, MemberSignupReqDto> pendingMembers = new HashMap<>();
-
+    private final Map<String, String> pendingPasswordResets = new HashMap<>();
+    private final MailService mailService;
     @Override
     public void savePendingMember(MemberSignupReqDto req) {
         pendingMembers.put(req.getEmail(), req); // 임시 저장 (메모리)
@@ -173,6 +176,35 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         member.setActive(active);
         memberRepository.save(member);
+    }
+
+    //비번 찾기
+    @Override
+    public String sendPasswordResetCode(String email) {
+        Member member = memberRepository.findByEmail(email);
+        if(member == null) return null;
+        String code = String.format("%06d", new Random().nextInt(999999));
+        pendingPasswordResets.put(email, code);
+        mailService.sendVerificationEmailHtml(email, code);
+        System.out.println("Password reset code for " + email + ": " + code);
+        return code;
+    }
+
+
+    @Override
+    public boolean resetPassword(String email, String code, String newPassword) {
+        System.out.println("요청 이메일: " + email);
+        System.out.println("요청 코드: " + code);
+        System.out.println("Pending codes: " + pendingPasswordResets);
+        String savedCode = pendingPasswordResets.get(email);
+        if(savedCode != null && savedCode.equals(code)) {
+            Member member = memberRepository.findByEmail(email);
+            member.setPwd(passwordEncoder.encode(newPassword));
+            memberRepository.save(member);
+            pendingPasswordResets.remove(email);
+            return true;
+        }
+        return false;
     }
 
 

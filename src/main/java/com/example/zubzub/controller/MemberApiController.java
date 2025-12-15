@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
+import java.util.Random;
+
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -77,14 +79,13 @@ public class MemberApiController {
         }
 
         memberService.savePendingMember(req);
-
-        // MailService 인스턴스로 호출
-        String code = mailService.sendVerificationEmailHtml(req.getEmail());
-        System.out.println("보낼 코드: "+code);
+        String code = String.format("%06d", new Random().nextInt(999999));
+        mailService.sendVerificationEmailHtml(req.getEmail(), code);
         String token = JwtUtil.generateToken(req.getEmail(), code);
 
         return ResponseEntity.ok(token);
     }
+
 
     @PostMapping("/signup/verify")
     public ResponseEntity<Boolean> verifySignupCode(@RequestParam String token, @RequestParam String code) {
@@ -113,4 +114,26 @@ public class MemberApiController {
         log.info("[API] 로그인 성공: {}", req.getEmail());
         return ResponseEntity.ok(result);
     }
+    // 비밀번호 찾기 요청 (메일 발송)
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<String> requestPasswordReset(@RequestParam String email) {
+        String code = memberService.sendPasswordResetCode(email);
+        if(code == null) return ResponseEntity.badRequest().body("해당 이메일이 없습니다.");
+        return ResponseEntity.ok(code); // 테스트용, 실제론 코드 안 보내고 메일 발송
+    }
+
+    // 비밀번호 재설정
+    @PostMapping("/password-reset/verify")
+    public ResponseEntity<Boolean> verifyPasswordReset(
+            @RequestParam String email,
+            @RequestParam String code,
+            @RequestParam String newPassword) {
+
+        boolean success = memberService.resetPassword(email, code, newPassword);
+        return ResponseEntity.ok(success);
+    }
+
+
+
+
 }
