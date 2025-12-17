@@ -33,14 +33,12 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 // URL별 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        // 로그인/회원가입/인증 확인 API는 모두 허용
-                        .requestMatchers(
-                                "/api/members/login",
+                        // JWT 없이 접근 가능
+                        .requestMatchers("/api/members/login",
                                 "/api/members/signup",
-                                "/api/members/signup/verify"
-                        ).permitAll()
-                        // 나머지 요청은 인증 필요
-                        .anyRequest().authenticated()
+                                "/api/members/signup/verify").permitAll()
+                        // 나머지 API는 모두 열기 (JWT 없이도 접근 가능)
+                        .anyRequest().permitAll()
                 )
                 // JWT 필터를 UsernamePasswordAuthenticationFilter 전에 적용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
