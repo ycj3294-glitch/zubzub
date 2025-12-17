@@ -1,10 +1,7 @@
 package com.example.zubzub.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +11,8 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table
+@NoArgsConstructor
+@AllArgsConstructor
 public class BidHistory {
     @Id
     @Column(name="bid_history_id")
