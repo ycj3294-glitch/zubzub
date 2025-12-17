@@ -16,7 +16,7 @@ public class MailController {
 
     // 인증번호 발송 + JWT 생성
     @PostMapping("/send")
-    public ResponseEntity<String> sendMail(@RequestParam String email) {
+    public ResponseEntity<String> sendMail(@RequestBody String email) {
         String code = mailService.sendVerificationEmail(email);
         String token = JwtUtil.generateToken(email, code);
         return ResponseEntity.ok(token); // JWT를 클라이언트에 전달
@@ -24,7 +24,7 @@ public class MailController {
 
     // 인증번호 검증
     @PostMapping("/verify")
-    public ResponseEntity<Boolean> verifyCode(@RequestParam String token, @RequestParam String code) {
+    public ResponseEntity<Boolean> verifyCode(@RequestBody String token, @RequestBody String code) {
         boolean valid = JwtUtil.validateToken(token, code);
         return ResponseEntity.ok(valid);
     }

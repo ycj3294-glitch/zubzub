@@ -18,16 +18,16 @@ public class AdminMemberApiController {
     private final MemberService memberService;
 
     /**
-     * 전체 회원 조회
+     * 전체 회원 조회 (관리자용)
      */
     @GetMapping
     public ResponseEntity<List<MemberResDto>> getAllMembers() {
-        List<MemberResDto> list = memberService.getAll();
-        return ResponseEntity.ok(list);
+        return ResponseEntity.ok(memberService.getAll());
     }
 
     /**
-     * 회원 일시정지 (active=false)
+     * 회원 일시정지
+     * member_status = SUSPENDED
      */
     @PatchMapping("/{id}/suspend")
     public ResponseEntity<?> suspendMember(@PathVariable Long id) {
@@ -36,7 +36,8 @@ public class AdminMemberApiController {
     }
 
     /**
-     * 회원 활성화 (active=true)
+     * 회원 활성화
+     * member_status = ACTIVE
      */
     @PatchMapping("/{id}/activate")
     public ResponseEntity<?> activateMember(@PathVariable Long id) {
@@ -45,12 +46,12 @@ public class AdminMemberApiController {
     }
 
     /**
-     * 회원 삭제 (영구 삭제)
+     * 회원 삭제 (Soft Delete)
+     * member_status = DELETE_REQ
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMember(@PathVariable Long id) {
         memberService.delete(id);
         return ResponseEntity.ok("회원이 삭제되었습니다.");
     }
-
 }

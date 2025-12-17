@@ -1,67 +1,81 @@
 package com.example.zubzub.service;
 
+import com.example.zubzub.dto.AuctionCreateDto;
+import com.example.zubzub.entity.Auction;
+import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.repository.AuctionRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.quartz.SchedulerException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuctionService {
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    private class AuctionState {
-        private Long auctionId;
-        private Long currentBid;
-        private LocalDateTime endDate;
-    }
-
     private final AuctionRepository auctionRepository;
-    private final ConcurrentHashMap<Long, AuctionState> cache = new ConcurrentHashMap<>();
-    private final SimpMessagingTemplate messagingTemplate;
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final AuctionSchedulerService auctionSchedulerService;
+    // 실시간성을 위한 캐시 사용
+    private final ConcurrentHashMap<Long, Auction> cache = new ConcurrentHashMap<>();
 
-
-    public void sampleTest(){
-
-        // 샘플 경매 하나 생성
-        AuctionState auction = new AuctionState(1L, 1000L, LocalDateTime.now().plusMinutes(1));
-        cache.put(auction.getAuctionId(), auction);
-
-        // 5초마다 캐시 변경 이벤트 발생
-        scheduler.scheduleAtFixedRate(this::simulateBid, 5, 1, TimeUnit.SECONDS);
+    // CREATE
+    public Boolean createAuction(AuctionCreateDto dto) {
+        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
+        // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
+        auction.setItemStatus("경매대기");
+        // DB에 넣어서 ID 자동 채우기
+        Auction savedAuction = auctionRepository.save(auction);
+        try {
+            // 시작 종료 타이머 걸기
+            auctionSchedulerService.scheduleAuctionStart(savedAuction);
+            auctionSchedulerService.scheduleAuctionEnd(savedAuction);
+        } catch (SchedulerException e) {
+            log.error("타이머 지정 실패 : {}", e.getMessage());
+            auctionRepository.deleteById(savedAuction.getId());
+            return false;
+        }
+        return true;
     }
 
-    private void simulateBid() {
-        log.info("아무거나");
-        AuctionState auction = cache.get(1L);
-        if (auction == null) return;
-
-        // currentBid 증가
-        long newBid = auction.getCurrentBid() + 100;
-        auction.setCurrentBid(newBid);
-
-        // endDate 5초 연장
-        auction.setEndDate(LocalDateTime.now().plusSeconds(30));
-
-        // 캐시 갱신
-        cache.put(auction.getAuctionId(), auction);
-
-        // WebSocket 브로드캐스트
-        messagingTemplate.convertAndSend("/topic/auction." + auction.getAuctionId(), auction);
+    // READ (전체 조회)
+    public List<Auction> getAllAuctions() {
+        return auctionRepository.findAll();
     }
 
+    // READ (단건 조회)
+    public Auction getAuctionById(Long id) {
+        // 캐시에서 먼저 찾고, 없으면 DB에서 조회 후 캐시에 넣어줌
+        Auction auction = cache.get(id);
+        if (auction == null) {
+            try {
+                auction = auctionRepository.findById(id).orElseThrow(() -> new RuntimeException("Auction not found"));
+            } catch (RuntimeException e){
+                log.info("auction 조회 오류 : {}", e.getMessage());
+                return null;
+            }
+            cache.put(id, auction);
+        }
+        return auction;
+    }
+
+    // cache UPDATE
+    public Boolean updateAuction(Long id, Auction auction) {
+        cache.put(id, auction);
+        return true;
+    }
+
+    // DB UPDATE
+    public Auction endAuction(Long id) {
+        Auction auction = cache.get(id);
+        return auctionRepository.save(auction);
+    }
+
+    // DELETE
+    public void deleteAuction(Long id) {
+        auctionRepository.deleteById(id);
+    }
 }

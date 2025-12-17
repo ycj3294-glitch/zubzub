@@ -1,8 +1,6 @@
 package com.example.zubzub.controller;
 
-import com.example.zubzub.dto.LoginDto;
-import com.example.zubzub.dto.MemberResDto;
-import com.example.zubzub.dto.MemberSignupReqDto;
+import com.example.zubzub.dto.*;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,7 +59,7 @@ public class MemberApiController {
     @PostMapping("/{id}/verify-password")
     public ResponseEntity<Boolean> verifyPassword(
             @PathVariable Long id,
-            @RequestParam String password) {
+            @RequestBody String password) {
 
         boolean match = memberService.checkPassword(id, password);
         log.info("[API] 비밀번호 검증: memberId={} / result={}", id, match);
@@ -88,13 +86,20 @@ public class MemberApiController {
 
 
     @PostMapping("/signup/verify")
-    public ResponseEntity<Boolean> verifySignupCode(@RequestParam String token, @RequestParam String code) {
-        boolean valid = JwtUtil.validateToken(token, code);
-        if(valid) {
-            memberService.activateMember(JwtUtil.getEmail(token));
+    public ResponseEntity<Boolean> verifySignupCode(
+            @RequestBody SignupVerifyDto req) {
+
+        boolean valid = JwtUtil.validateToken(req.getToken(), req.getCode());
+
+        if (valid) {
+            memberService.activateMember(
+                    JwtUtil.getEmail(req.getToken())
+            );
         }
+
         return ResponseEntity.ok(valid);
     }
+
 
 
 
@@ -116,22 +121,19 @@ public class MemberApiController {
     }
     // 비밀번호 찾기 요청 (메일 발송)
     @PostMapping("/password-reset/request")
-    public ResponseEntity<String> requestPasswordReset(@RequestParam String email) {
-        String code = memberService.sendPasswordResetCode(email);
+    public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDto req) {
+        String code = memberService.sendPasswordResetCode(req.getEmail());
         if(code == null) return ResponseEntity.badRequest().body("해당 이메일이 없습니다.");
-        return ResponseEntity.ok(code); // 테스트용, 실제론 코드 안 보내고 메일 발송
+        return ResponseEntity.ok(code);
     }
 
     // 비밀번호 재설정
     @PostMapping("/password-reset/verify")
-    public ResponseEntity<Boolean> verifyPasswordReset(
-            @RequestParam String email,
-            @RequestParam String code,
-            @RequestParam String newPassword) {
-
-        boolean success = memberService.resetPassword(email, code, newPassword);
+    public ResponseEntity<Boolean> verifyPasswordReset(@RequestBody PasswordResetDto req) {
+        boolean success = memberService.resetPassword(req.getEmail(), req.getCode(), req.getNewPassword());
         return ResponseEntity.ok(success);
     }
+
 
 
 
