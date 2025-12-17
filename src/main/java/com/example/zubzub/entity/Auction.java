@@ -41,8 +41,9 @@ public class Auction {
     @Column
     private String itemImg;
 
+    @Enumerated(EnumType.STRING)   // DB에 문자열로 저장
     @Column(nullable = false)
-    private String itemStatus;
+    private AuctionStatus auctionStatus;
 
     @Column(nullable = false)
     private LocalDateTime startTime;

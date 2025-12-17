@@ -1,5 +1,6 @@
 package com.example.zubzub.dto;
 
+import com.example.zubzub.entity.AuctionStatus;
 import jakarta.persistence.Column;
 import lombok.*;
 
@@ -27,7 +28,7 @@ public class AuctionResDto {
 
     private String itemImg;
 
-    private String itemStatus;
+    private String auctionStatus;
 
     private LocalDateTime startTime;
 

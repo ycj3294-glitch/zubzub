@@ -2,6 +2,7 @@ package com.example.zubzub.job;
 
 import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -24,7 +25,7 @@ public class AuctionStartJob implements Job {
         Auction auction = auctionService.getAuctionById(auctionId);
 
         // 경매중 상태로 설정
-        auction.setItemStatus("경매중");
+        auction.setAuctionStatus(AuctionStatus.ACTIVE);
 
         // 캐시에 업데이트
         auctionService.updateAuction(auction);

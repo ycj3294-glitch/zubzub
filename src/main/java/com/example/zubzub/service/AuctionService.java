@@ -1,7 +1,9 @@
 package com.example.zubzub.service;
 
 import com.example.zubzub.dto.AuctionCreateDto;
+import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.repository.AuctionRepository;
 import lombok.*;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,7 +29,7 @@ public class AuctionService {
     public Boolean createAuction(AuctionCreateDto dto) {
         Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
         // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
-        auction.setItemStatus("경매대기");
+        auction.setAuctionStatus(AuctionStatus.READY);
         // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
         try {
@@ -42,8 +45,10 @@ public class AuctionService {
     }
 
     // READ (전체 조회)
-    public List<Auction> getAllAuctions() {
-        return auctionRepository.findAll();
+    public List<AuctionResDto> getAllAuctions() {
+        return auctionRepository.findAll().stream()
+                .map(AuctionMapper::convertEntityToAuctionDto)
+                        .collect(Collectors.toList());
     }
 
     // READ (단건 조회)
@@ -60,6 +65,12 @@ public class AuctionService {
             cache.put(id, auction);
         }
         return auction;
+    }
+
+    public AuctionResDto getAuctionDtoById(Long id) {
+        Auction auction = getAuctionById(id);
+        if (auction != null) return AuctionMapper.convertEntityToAuctionDto(auction);
+        else return null;
     }
 
     // cache UPDATE

@@ -3,6 +3,7 @@ package com.example.zubzub.service;
 import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.entity.BidHistory;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class AuctionBidService {
         Auction auction = auctionService.getAuctionById(auctionId);
 
         // 경매중 상태가 아니면 입찰 false
-        if (!auction.getItemStatus().equals("경매중")) return false;
+        if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
 
         // 연장 종료 시간이 비어있으면 기본 종료시간으로 채워주기
         if (auction.getExtendedEndTime() == null) {

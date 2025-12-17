@@ -1,6 +1,7 @@
 package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.AuctionCreateDto;
+import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.Auction;
 import com.example.zubzub.service.AuctionBidService;
@@ -22,8 +23,8 @@ public class AuctionController {
 
     // 경매 하나 보기
     @GetMapping("/{id}")
-    public ResponseEntity<Auction> getAuction(@PathVariable Long id) {
-        return ResponseEntity.ok(auctionService.getAuctionById(id));
+    public ResponseEntity<AuctionResDto> getAuction(@PathVariable Long id) {
+        return ResponseEntity.ok(auctionService.getAuctionDtoById(id));
     }
 
     // 경매 생성
