@@ -1,24 +1,28 @@
 package com.example.zubzub.config;
 
 import com.example.zubzub.security.JwtHandshakeInterceptor;
+import com.example.zubzub.security.StompPrincipalHandshakeHandler;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
+@RequiredArgsConstructor
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final StompPrincipalHandshakeHandler handshakeHandler;
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // 클라이언트가 연결할 엔드포인트
         registry.addEndpoint("/ws")
                 .addInterceptors(new JwtHandshakeInterceptor())
+                .setHandshakeHandler(handshakeHandler)
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
-
     }
 
     @Override
