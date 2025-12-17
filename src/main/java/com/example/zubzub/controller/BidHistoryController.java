@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @CrossOrigin(origins = {"http://192.168.0.93:3000", "http://localhost:3000"}) // 동일 출처 에러 방지용
-@RequestMapping("/bid-history")
+@RequestMapping("/api/bid-histories")
 @RequiredArgsConstructor
 public class BidHistoryController {
 
