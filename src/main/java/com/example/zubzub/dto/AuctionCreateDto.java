@@ -1,5 +1,6 @@
 package com.example.zubzub.dto;
 
+import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDateTime;

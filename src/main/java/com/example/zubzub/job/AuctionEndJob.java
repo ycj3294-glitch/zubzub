@@ -1,7 +1,8 @@
 package com.example.zubzub.job;
 
-import com.example.zubzub.component.AuctionBroadcaster;
+import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class AuctionEndJob implements Job {
 
     private final AuctionService auctionService;
-    private final AuctionBroadcaster auctionBroadcaster;
+    private final Broadcaster broadcaster;
 
     // 경매종료시 실행할 로직
     @Override
@@ -24,13 +25,13 @@ public class AuctionEndJob implements Job {
         Auction auction = auctionService.getAuctionById(auctionId);
 
         // 경매종료 상태로 설정
-        auction.setItemStatus("경매종료");
+        auction.setAuctionStatus(AuctionStatus.COMPLETED);
 
         // 캐시에 업데이트
-        auctionService.updateAuction(auctionId, auction);
+        auctionService.updateAuction(auction);
 
         // 브로드캐스트
-        auctionBroadcaster.broadcast(auction);
+        broadcaster.broadcastAuction(auction);
 
         // DB에 업데이트
         auctionService.endAuction(auctionId);

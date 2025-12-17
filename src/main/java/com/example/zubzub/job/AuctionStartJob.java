@@ -1,7 +1,8 @@
 package com.example.zubzub.job;
 
-import com.example.zubzub.component.AuctionBroadcaster;
+import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 public class AuctionStartJob implements Job {
 
     private final AuctionService auctionService;
-    private final AuctionBroadcaster auctionBroadcaster;
+    private final Broadcaster broadcaster;
 
     // 경매시작시 실행할 로직
     @Override
@@ -24,13 +25,13 @@ public class AuctionStartJob implements Job {
         Auction auction = auctionService.getAuctionById(auctionId);
 
         // 경매중 상태로 설정
-        auction.setItemStatus("경매중");
+        auction.setAuctionStatus(AuctionStatus.ACTIVE);
 
         // 캐시에 업데이트
-        auctionService.updateAuction(auctionId, auction);
+        auctionService.updateAuction(auction);
 
         // 브로드캐스트
-        auctionBroadcaster.broadcast(auction);
+        broadcaster.broadcastAuction(auction);
 
         System.out.println("Auction " + auctionId + " 시작 처리 실행!");
     }

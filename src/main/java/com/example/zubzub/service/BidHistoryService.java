@@ -1,5 +1,6 @@
 package com.example.zubzub.service;
 
+import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.BidHistory;
 import com.example.zubzub.repository.BidHistoryRepository;
 import lombok.RequiredArgsConstructor;
