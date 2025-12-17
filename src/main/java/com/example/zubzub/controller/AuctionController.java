@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @CrossOrigin(origins = {"http://192.168.0.93:3000", "http://localhost:3000"}) // 동일 출처 에러 방지용
-@RequestMapping("/auctions")
+@RequestMapping("/api/auctions")
 @RequiredArgsConstructor
 public class AuctionController {
 
@@ -28,13 +28,16 @@ public class AuctionController {
 
     // 경매 생성
     @PostMapping()
-    public ResponseEntity<Boolean> createAuction(@RequestBody AuctionCreateDto dto) {
-        return ResponseEntity.ok(auctionService.createAuction(dto));
+    public ResponseEntity<Void> createAuction(@RequestBody AuctionCreateDto dto) {
+        auctionService.createAuction(dto);
+        System.out.println("DF");
+        return ResponseEntity.ok().build();
     }
 
     // 경매에 입찰하기
     @PostMapping("/{id}/bids")
-    public ResponseEntity<Boolean> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
-        return ResponseEntity.ok(auctionBidService.placeBid(id, dto));
+    public ResponseEntity<Void> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
+        auctionBidService.placeBid(id, dto);
+        return ResponseEntity.ok().build();
     }
 }

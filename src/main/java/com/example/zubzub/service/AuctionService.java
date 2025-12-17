@@ -63,8 +63,8 @@ public class AuctionService {
     }
 
     // cache UPDATE
-    public Boolean updateAuction(Long id, Auction auction) {
-        cache.put(id, auction);
+    public Boolean updateAuction(Auction auction) {
+        cache.put(auction.getId(), auction);
         return true;
     }
 
