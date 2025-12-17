@@ -1,8 +1,10 @@
 package com.example.zubzub.service;
 
+import com.example.zubzub.dto.LoginMemberDto;
 import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.dto.MemberUpdateReqDto;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -28,6 +30,8 @@ public interface MemberService {
        로그인
        ========================= */
     MemberResDto login(String email, String rawPwd);
+    LoginMemberDto loginWithJwt(String email, String rawPwd);
+
 
     /* =========================
        조회

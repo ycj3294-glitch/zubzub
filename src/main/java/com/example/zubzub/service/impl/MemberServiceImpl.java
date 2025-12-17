@@ -1,12 +1,16 @@
 package com.example.zubzub.service.impl;
 
+import com.example.zubzub.dto.LoginMemberDto;
 import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.dto.MemberUpdateReqDto;
 import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.MemberRepository;
+import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 import com.example.zubzub.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +93,17 @@ public class MemberServiceImpl implements MemberService {
 
         return new MemberResDto(member);
     }
+    public LoginMemberDto loginWithJwt(String email, String rawPwd) {
+        MemberResDto member = login(email, rawPwd);
+        if (member == null) return null;
+
+        String accessToken = JwtUtil.generateTokenForLogin(member.getEmail(), member.getId(), member.isAdmin());
+        String refreshToken = JwtUtil.generateRefreshToken(member.getEmail(), member.getId(), member.isAdmin());
+
+        // DTO 반환 (쿠키는 컨트롤러에서 설정)
+        return new LoginMemberDto(member.getId(), member.getEmail(), member.getNickname(), accessToken, refreshToken);
+    }
+
 
     /* =========================
        조회

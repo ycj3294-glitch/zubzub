@@ -22,6 +22,29 @@ public class JwtUtil {
                 .signWith(key)
                 .compact();
     }
+    public static String  generateTokenForLogin(String email, long memberId, boolean isAdmin) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("memberId", memberId)
+                .claim("role", isAdmin ? "ADMIN" : "USER")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 30분
+                .signWith(key)
+                .compact();
+    }
+    public static String generateRefreshToken(String email, long memberId, boolean isAdmin) {
+        return Jwts.builder()
+                .setSubject(email)
+                .claim("memberId", memberId)
+                .claim("role", isAdmin ? "ADMIN" : "USER")
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)) // 1주
+                .signWith(key)
+                .compact();
+    }
+    public static Jws<Claims> parseToken(String token) {
+        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+    }
 
     public static boolean validateToken(String token, String code) {
         try {
@@ -35,4 +58,6 @@ public class JwtUtil {
     public static String getEmail(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
     }
+
+
 }

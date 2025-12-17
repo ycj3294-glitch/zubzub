@@ -2,6 +2,8 @@ package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.*;
 import com.example.zubzub.service.MemberService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -107,18 +109,21 @@ public class MemberApiController {
      * 로그인
      */
     @PostMapping("/login")
-    public ResponseEntity<MemberResDto> login(@RequestBody LoginDto req) {
+    public ResponseEntity<LoginMemberDto> login(@RequestBody LoginDto req, HttpServletResponse response) {
+        LoginMemberDto result = memberService.loginWithJwt(req.getEmail(), req.getPwd());
+        if(result == null) return ResponseEntity.status(401).build();
 
-        MemberResDto result = memberService.login(req.getEmail(), req.getPwd());
+        Cookie refreshCookie = new Cookie("refreshToken", result.getRefreshToken());
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
+        response.addCookie(refreshCookie);
 
-        if (result == null) {
-            log.warn("[API] 로그인 실패: {}", req.getEmail());
-            return ResponseEntity.status(401).build();
-        }
-
-        log.info("[API] 로그인 성공: {}", req.getEmail());
+        result.setRefreshToken(null); // 클라이언트에 body로는 안 내려주고 쿠키로만 전달
         return ResponseEntity.ok(result);
     }
+
+
     // 비밀번호 찾기 요청 (메일 발송)
     @PostMapping("/password-reset/request")
     public ResponseEntity<String> requestPasswordReset(@RequestBody PasswordResetRequestDto req) {
