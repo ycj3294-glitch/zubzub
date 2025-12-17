@@ -2,6 +2,9 @@ package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.*;
 import com.example.zubzub.service.MemberService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
+import java.util.Map;
 import java.util.Random;
 
 @RestController
@@ -113,6 +117,9 @@ public class MemberApiController {
         LoginMemberDto result = memberService.loginWithJwt(req.getEmail(), req.getPwd());
         if(result == null) return ResponseEntity.status(401).build();
 
+        log.info("[LOGIN] AccessToken: {}", result.getAccessToken());
+        log.info("[LOGIN] RefreshToken (쿠키용): {}", result.getRefreshToken());
+
         Cookie refreshCookie = new Cookie("refreshToken", result.getRefreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
@@ -122,6 +129,35 @@ public class MemberApiController {
         result.setRefreshToken(null); // 클라이언트에 body로는 안 내려주고 쿠키로만 전달
         return ResponseEntity.ok(result);
     }
+    @GetMapping("/token/refresh")
+    public ResponseEntity<String> refreshAccessToken(
+            @CookieValue(value = "refreshToken", required = false) String refreshToken
+    ) {
+        if (refreshToken == null) {
+            log.warn("[TOKEN REFRESH] 리프레시 토큰 없음. AccessToken 재발급 불가");
+            return ResponseEntity.status(401).body("리프레시 토큰 없음");
+        }
+
+        try {
+            Jws<Claims> claims = JwtUtil.parseToken(refreshToken);
+            String email = claims.getBody().getSubject();
+            long memberId = claims.getBody().get("memberId", Long.class);
+            boolean isAdmin = "ADMIN".equals(claims.getBody().get("role", String.class));
+
+            String newAccessToken = JwtUtil.generateTokenForLogin(email, memberId, isAdmin);
+
+            log.info("[TOKEN REFRESH] 자동 재발급 성공: memberId={}, email={}, newAccessToken={}",
+                    memberId, email, newAccessToken);
+
+            return ResponseEntity.ok(newAccessToken);
+
+        } catch (JwtException e) {
+            log.warn("[TOKEN REFRESH] 리프레시 토큰 만료 또는 유효하지 않음: {}", e.getMessage());
+            return ResponseEntity.status(401).body("리프레시 토큰 만료 또는 유효하지 않음");
+        }
+    }
+
+
 
 
     // 비밀번호 찾기 요청 (메일 발송)

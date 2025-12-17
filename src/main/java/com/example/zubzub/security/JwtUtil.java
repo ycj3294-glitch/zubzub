@@ -28,7 +28,8 @@ public class JwtUtil {
                 .claim("memberId", memberId)
                 .claim("role", isAdmin ? "ADMIN" : "USER")
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 30분
+                .setExpiration(new Date(System.currentTimeMillis() + 10 * 1000)) // 10초
+//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 60분
                 .signWith(key)
                 .compact();
     }
