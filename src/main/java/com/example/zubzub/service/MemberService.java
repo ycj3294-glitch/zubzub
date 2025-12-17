@@ -4,7 +4,6 @@ import com.example.zubzub.dto.LoginMemberDto;
 import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.dto.MemberUpdateReqDto;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 

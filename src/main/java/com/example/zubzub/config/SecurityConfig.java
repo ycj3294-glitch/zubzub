@@ -37,8 +37,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/members/login",
                                 "/api/members/signup",
                                 "/api/members/signup/verify").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         // 나머지 API는 모두 열기 (JWT 없이도 접근 가능)
                         .anyRequest().permitAll()
+
                 )
                 // JWT 필터를 UsernamePasswordAuthenticationFilter 전에 적용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
