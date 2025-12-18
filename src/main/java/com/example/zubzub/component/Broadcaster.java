@@ -2,6 +2,7 @@ package com.example.zubzub.component;
 
 import com.example.zubzub.dto.ChatMessage;
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.mapper.AuctionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,7 @@ public class Broadcaster {
 
     // 경매 알림
     public void broadcastAuction(Auction auction) {
-        messagingTemplate.convertAndSend("/topic/auction." + auction.getId(), auction);
+        messagingTemplate.convertAndSend("/topic/auction." + auction.getId(), AuctionMapper.convertEntityToAuctionDto(auction));
     }
 
     // 채팅 알림

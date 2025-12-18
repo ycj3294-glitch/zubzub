@@ -1,12 +1,18 @@
 package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.BidHistoryCreateDto;
+import com.example.zubzub.dto.BidHistoryResDto;
 import com.example.zubzub.entity.BidHistory;
 import com.example.zubzub.service.BidHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -17,14 +23,12 @@ public class BidHistoryController {
 
     private final BidHistoryService bidHistoryService;
 
-//    @PostMapping
-//    public BidHistory create(@RequestBody BidHistoryCreateDto dto) {
-//        return bidHistoryService.save(dto);
-//    }
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<BidHistory>  get(@PathVariable Long id) {
-//        return ResponseEntity.ok(bidHistoryService.findById(id));
-//    }
+    @GetMapping
+    public ResponseEntity<List<BidHistoryResDto>> list(
+            @RequestParam Long auctionId,
+            @PageableDefault(page = 0, size = 20, sort = "bidTime", direction = Sort.Direction.DESC)
+            Pageable pageable) {
+        return ResponseEntity.ok(bidHistoryService.findByAuctionId(auctionId, pageable));
+    }
 
 }
