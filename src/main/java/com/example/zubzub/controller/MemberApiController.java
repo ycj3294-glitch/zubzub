@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
-import java.util.Map;
 import java.util.Random;
 
 @RestController
@@ -129,6 +128,22 @@ public class MemberApiController {
         result.setRefreshToken(null); // 클라이언트에 body로는 안 내려주고 쿠키로만 전달
         return ResponseEntity.ok(result);
     }
+    //로그아웃
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletResponse response) {
+
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0); // 즉시 삭제
+
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok("로그아웃 완료");
+    }
+
+
+
     @GetMapping("/token/refresh")
     public ResponseEntity<String> refreshAccessToken(
             @CookieValue(value = "refreshToken", required = false) String refreshToken
