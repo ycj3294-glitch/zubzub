@@ -16,6 +16,7 @@ public class AuctionMapper {
                 .itemName(dto.getItemName())
                 .itemDesc(dto.getItemDesc())
                 .startPrice(dto.getStartPrice())
+                .itemImg(dto.getItemImg())
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .build();

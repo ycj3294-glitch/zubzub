@@ -22,6 +22,8 @@ public class AuctionCreateDto {
 
     private int startPrice;
 
+    private String itemImg;
+
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
