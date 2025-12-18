@@ -36,6 +36,9 @@ public class AuctionBidService {
         // 경매중 상태가 아니면 입찰 false
         if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
 
+        // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
+        if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
+
         // 연장 종료 시간이 비어있으면 기본 종료시간으로 채워주기
         if (auction.getExtendedEndTime() == null) {
             auction.setExtendedEndTime(auction.getEndTime());
