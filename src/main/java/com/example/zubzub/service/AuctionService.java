@@ -9,6 +9,8 @@ import com.example.zubzub.repository.AuctionRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -88,5 +90,17 @@ public class AuctionService {
     // DELETE
     public void deleteAuction(Long id) {
         auctionRepository.deleteById(id);
+    }
+
+
+    // 마이페이지 판매 목록 리스트 조회(페이지네이션)
+    public Page<AuctionResDto> ListSellAuction(Long id, Pageable pageable) {
+        Page<Auction> auction = auctionRepository.findBySellerId(id, pageable);
+        return auction.map(AuctionMapper::convertEntityToAuctionDto);
+    }
+    // 마이페이지 낙찰 내역 리스트 조회(페이지네이션)
+    public Page<AuctionResDto> ListWinnerAuction(Long id, Pageable pageable) {
+        Page<Auction> auction = auctionRepository.findByWinnerId(id, pageable);
+        return auction.map(AuctionMapper::convertEntityToAuctionDto);
     }
 }
