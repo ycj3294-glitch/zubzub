@@ -115,15 +115,6 @@ public class AuctionService {
         auction.setAuctionStatus(AuctionStatus.PENDING);
         // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
-        try {
-            // 시작 종료 타이머 걸기
-            auctionSchedulerService.scheduleAuctionStart(savedAuction);
-            auctionSchedulerService.scheduleAuctionEnd(savedAuction);
-        } catch (SchedulerException e) {
-            log.error("타이머 지정 실패 : {}", e.getMessage());
-            auctionRepository.deleteById(savedAuction.getId());
-            return false;
-        }
         return true;
     }
 
