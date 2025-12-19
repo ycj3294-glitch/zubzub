@@ -12,7 +12,9 @@ import org.quartz.SchedulerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -105,5 +107,46 @@ public class AuctionService {
     public Page<AuctionResDto> ListWinnerAuction(Long id, Pageable pageable) {
         Page<Auction> auction = auctionRepository.findByWinnerId(id, pageable);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);
+    }
+    // create 대규모
+    public Boolean createBigAuction(AuctionCreateDto dto) {
+        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
+        // 경매생성시 자동으로 승인대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
+        auction.setAuctionStatus(AuctionStatus.PENDING);
+        // DB에 넣어서 ID 자동 채우기
+        Auction savedAuction = auctionRepository.save(auction);
+        try {
+            // 시작 종료 타이머 걸기
+            auctionSchedulerService.scheduleAuctionStart(savedAuction);
+            auctionSchedulerService.scheduleAuctionEnd(savedAuction);
+        } catch (SchedulerException e) {
+            log.error("타이머 지정 실패 : {}", e.getMessage());
+            auctionRepository.deleteById(savedAuction.getId());
+            return false;
+        }
+        return true;
+    }
+
+    // 대규모 경매 관리자 승인
+    @Transactional
+    public void approveAuction(Long id) {
+        Auction auction = auctionRepository.findById(id)
+        .orElseThrow(()-> new IllegalArgumentException("해당 경매는 없습니다."));
+
+        if (auction.getAuctionStatus() != AuctionStatus.PENDING) {
+            throw new IllegalStateException("승인할 수 없는 상태입니다.");        }
+
+        auction.setAuctionStatus(AuctionStatus.READY);
+    }
+    // 시작 시간, 종료시간 선정
+    @Transactional
+    public void setTime(Long id, LocalDateTime startTime, LocalDateTime endTime) {
+        Auction auction = auctionRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException("해당 경매는 없습니다."));
+        if (startTime.isAfter(endTime)) {
+            throw new IllegalStateException("시작 시간이 종료 시간보다 늦을 수 없습니다.");
+        }
+        auction.setStartTime(startTime);
+        auction.setEndTime(endTime);
     }
 }

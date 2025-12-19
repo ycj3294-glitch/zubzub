@@ -44,9 +44,18 @@ public class GlobalExceptionHandler {
         log.error("검증 실패: {}", msg);
         Map<String, Object> body = new HashMap<>();
         body.put("code", "VALIDATION_FAILED");
-        body.put("message",msg);
+        body.put("message", msg);
         body.put("timestamp", LocalDateTime.now());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException e) {
+        log.error("비즈니스 예외: {}", e.getMessage());
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", "INVALID_STATE");
+        body.put("message", e.getMessage());
+        body.put("timestamp", LocalDateTime.now());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body); // 409 추천
+    }
 }

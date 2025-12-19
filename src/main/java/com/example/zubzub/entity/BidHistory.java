@@ -11,8 +11,6 @@ import java.time.LocalDateTime;
 @Entity
 @Builder
 @Table
-@NoArgsConstructor
-@AllArgsConstructor
 public class BidHistory {
     @Id
     @Column(name="bid_history_id")

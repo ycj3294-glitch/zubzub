@@ -1,6 +1,8 @@
 package com.example.zubzub.controller;
 
+import com.example.zubzub.dto.AuctionTimeUpdateRequest;
 import com.example.zubzub.dto.MemberResDto;
+import com.example.zubzub.service.AuctionService;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import java.util.List;
 public class AdminMemberApiController {
 
     private final MemberService memberService;
+    private final AuctionService auctionService;
 
     /**
      * 전체 회원 조회 (관리자용)
@@ -53,5 +56,18 @@ public class AdminMemberApiController {
     public ResponseEntity<?> deleteMember(@PathVariable Long id) {
         memberService.delete(id);
         return ResponseEntity.ok("회원이 삭제되었습니다.");
+    }
+    // 아래로 jwt 관련 없는 작업
+    // 프리미엄 경매 승인
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<String> approveAuction(@PathVariable Long id) {
+        auctionService.approveAuction(id);
+        return ResponseEntity.ok("승인되었습니다.");
+    }
+    // 프리미엄 경매 일정 배정
+    @PostMapping("/settime")
+    public ResponseEntity<String> setTime(@RequestBody AuctionTimeUpdateRequest req) {
+        auctionService.setTime(req.getId(), req.getStartTime(), req.getEndTime());
+        return ResponseEntity.ok("시간이 배정되었습니다.");
     }
 }
