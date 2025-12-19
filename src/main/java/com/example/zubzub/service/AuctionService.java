@@ -149,4 +149,20 @@ public class AuctionService {
         auction.setStartTime(startTime);
         auction.setEndTime(endTime);
     }
+    // 일반 경매 수정
+    @Transactional
+    public void updateNormalAuction(Long auctionid, AuctionCreateDto req) {
+        // 해당 경매 있는지 확인
+        Auction auction = auctionRepository.findById(auctionid)
+                .orElseThrow(()-> new IllegalArgumentException("해당 경매는 없습니다."));
+        // 해당 경매 판매자인지 확인(토큰 고려해야함 지금 안해)
+        // 데이터 수정
+        auction.setCategory(req.getCategory());
+        auction.setStartPrice(req.getStartPrice());
+        auction.setItemName(req.getItemName());
+        auction.setItemDesc(req.getItemDesc());
+        auction.setItemImg(req.getItemImg());
+        auction.setStartTime(req.getStartTime());
+        auction.setEndTime(req.getEndTime());
+    }
 }

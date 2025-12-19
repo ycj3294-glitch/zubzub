@@ -57,4 +57,10 @@ public class AuctionController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(auctionService.ListWinnerAuction(id, pageable));
     }
+    // 일반 경매 수정
+    @PatchMapping("/{id}/normalupdate")
+    public ResponseEntity<String> updateNormalAuction(@PathVariable Long id, @RequestBody AuctionCreateDto req) {
+        auctionService.updateNormalAuction(id, req);
+        return ResponseEntity.ok("수정이 완료되었습니다.");
+    }
 }
