@@ -26,24 +26,49 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.startsWith("/api/members/signup")
+                || path.startsWith("/api/members/login")
+                || path.startsWith("/api/members/token/refresh");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
 
             try {
                 Jws<Claims> claims = JwtUtil.parseToken(token);
+
+                // 🔥 LOGIN 토큰만 인증 처리
+                String type = claims.getBody().get("type", String.class);
+                if (!"LOGIN".equals(type)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 String email = claims.getBody().getSubject();
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
 
                 UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (JwtException e) {
+                SecurityContextHolder.clearContext();
                 log.warn("[JWT FILTER] 토큰 유효하지 않음: {}", e.getMessage());
             }
         }

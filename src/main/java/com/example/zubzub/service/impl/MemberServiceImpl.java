@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
@@ -46,6 +47,7 @@ public class MemberServiceImpl implements MemberService {
     public void savePendingMember(MemberSignupReqDto req) {
         pendingMembers.put(req.getEmail(), req);
     }
+
     @Transactional
     @Override
     public void activateMember(String email) {
@@ -66,6 +68,18 @@ public class MemberServiceImpl implements MemberService {
         member.setAdmin(false);
         member.setMemberStatus("ACTIVE");
 
+        memberRepository.save(member);
+    }
+    @Transactional
+    @Override
+    public void completeSignup(MemberSignupReqDto req) {
+        Member member = new Member();
+        member.setEmail(req.getEmail());
+        member.setPwd(passwordEncoder.encode(req.getPwd()));
+        member.setNickname(req.getNickname());
+        member.setName(req.getName());
+        member.setMemberStatus("ACTIVE");
+        member.setAdmin(false);
         memberRepository.save(member);
     }
 

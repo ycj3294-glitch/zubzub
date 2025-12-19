@@ -22,6 +22,7 @@ public interface MemberService {
     /* =========================
        회원가입 (이메일 인증)
        ========================= */
+    void completeSignup(MemberSignupReqDto req);
     void savePendingMember(MemberSignupReqDto req);
     void activateMember(String email);
 

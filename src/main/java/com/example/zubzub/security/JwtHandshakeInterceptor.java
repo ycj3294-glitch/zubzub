@@ -8,6 +8,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import com.example.zubzub.security.JwtType;
 
 import java.util.Map;
 
@@ -32,6 +33,11 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
 
         try {
             Jws<Claims> claims = JwtUtil.parseToken(token);
+            if (JwtUtil.getTokenType(token) != JwtType.LOGIN) {
+                log.warn("[WS] LOGIN 토큰 아님. 접속 차단");
+                return false;
+            }
+
             String email = claims.getBody().getSubject();
 
             // WS 세션 attributes 저장

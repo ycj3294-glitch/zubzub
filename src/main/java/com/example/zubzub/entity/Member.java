@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+
 @Entity
 @Table(name = "member")
 @Getter
@@ -34,7 +35,7 @@ public class Member {
        ========================= */
 
     @Column(nullable = false)
-    private String name;
+    private String name = "";
 
     @Column(nullable = false, unique = true)
     private String nickname;
@@ -57,7 +58,7 @@ public class Member {
     private int credit = 0;
 
     @Column(name = "is_admin", nullable = false)
-    private boolean isAdmin = false;
+    private boolean isAdmin = false; // 소문자 i
 
     /**
      * ACTIVE      : 정상

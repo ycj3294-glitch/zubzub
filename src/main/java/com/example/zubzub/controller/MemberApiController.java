@@ -1,6 +1,8 @@
 package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.*;
+import com.example.zubzub.entity.Member;
+import com.example.zubzub.repository.MemberRepository;
 import com.example.zubzub.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -24,6 +26,7 @@ public class MemberApiController {
 
     private final MemberService memberService;
     private final MailService mailService;
+    private final MemberRepository memberRepository;
 
     /**
      * 이메일 중복 체크
@@ -91,18 +94,14 @@ public class MemberApiController {
 
 
     @PostMapping("/signup/verify")
-    public ResponseEntity<Boolean> verifySignupCode(
-            @RequestBody SignupVerifyDto req) {
-
+    public ResponseEntity<Boolean> verifySignupCode(@RequestBody SignupVerifyDto req) {
         boolean valid = JwtUtil.validateToken(req.getToken(), req.getCode());
-
-        if (valid) {
-            memberService.activateMember(
-                    JwtUtil.getEmail(req.getToken())
-            );
-        }
-
         return ResponseEntity.ok(valid);
+    }
+    @PostMapping("/signup/complete")
+    public ResponseEntity<String> completeSignup(@RequestBody MemberSignupReqDto req) {
+        memberService.completeSignup(req); // Service 호출
+        return ResponseEntity.ok("회원가입 완료");
     }
 
 

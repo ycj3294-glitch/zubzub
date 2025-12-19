@@ -17,32 +17,37 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("code", code)
+                .claim("type", JwtType.SIGNUP.name())   // ✅ 추가
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(key)
                 .compact();
     }
-    public static String  generateTokenForLogin(String email, long memberId, boolean isAdmin) {
+
+    public static String generateTokenForLogin(String email, long memberId, boolean isAdmin) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("memberId", memberId)
                 .claim("role", isAdmin ? "ADMIN" : "USER")
+                .claim("type", JwtType.LOGIN.name())    // ✅ 추가
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 10 * 1000)) // 10초
-//                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 60분
+                .setExpiration(new Date(System.currentTimeMillis() + 30 * 1000))
                 .signWith(key)
                 .compact();
     }
+
     public static String generateRefreshToken(String email, long memberId, boolean isAdmin) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("memberId", memberId)
                 .claim("role", isAdmin ? "ADMIN" : "USER")
+                .claim("type", JwtType.REFRESH.name())  // ✅ 추가
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)) // 1주
+                .setExpiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000))
                 .signWith(key)
                 .compact();
     }
+
     public static Jws<Claims> parseToken(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
     }
@@ -59,6 +64,17 @@ public class JwtUtil {
     public static String getEmail(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
     }
+    public static JwtType getTokenType(String token) {
+        Claims claims = parseToken(token).getBody();
+        String type = claims.get("type", String.class);
+
+        if (type == null) {
+            throw new JwtException("JWT type claim 없음");
+        }
+
+        return JwtType.valueOf(type);
+    }
+
 
 
 }

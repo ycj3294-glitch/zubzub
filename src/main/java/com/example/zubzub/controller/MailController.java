@@ -1,5 +1,6 @@
 package com.example.zubzub.controller;
 
+import com.example.zubzub.dto.VerifyMailDto;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,9 @@ public class MailController {
 
     // 인증번호 검증
     @PostMapping("/verify")
-    public ResponseEntity<Boolean> verifyCode(@RequestBody String token, @RequestBody String code) {
-        boolean valid = JwtUtil.validateToken(token, code);
+    public ResponseEntity<Boolean> verifyCode(@RequestBody VerifyMailDto req) {
+        boolean valid = JwtUtil.validateToken(req.getToken(), req.getCode());
         return ResponseEntity.ok(valid);
     }
+
 }
