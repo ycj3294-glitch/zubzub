@@ -7,13 +7,6 @@ import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.BidHistory;
 
 public class AuctionMapper {
-    public static BidHistory convertBidHistoryDtoToEntity(BidHistoryCreateDto dto) {
-        return BidHistory.builder()
-                .auctionId((dto.getAuctionId()))
-                .memberId(dto.getMemberId())
-                .price(dto.getPrice())
-                .build();
-    }
 
     public static Auction convertAuctionDtoToEntity(AuctionCreateDto dto) {
         return Auction.builder()
@@ -23,6 +16,7 @@ public class AuctionMapper {
                 .itemName(dto.getItemName())
                 .itemDesc(dto.getItemDesc())
                 .startPrice(dto.getStartPrice())
+                .itemImg(dto.getItemImg())
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .build();

@@ -1,15 +1,22 @@
 package com.example.zubzub.service;
 
 import com.example.zubzub.dto.BidHistoryCreateDto;
+import com.example.zubzub.dto.BidHistoryResDto;
+import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.BidHistory;
+import com.example.zubzub.mapper.BidHistoryMapper;
 import com.example.zubzub.repository.BidHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -24,6 +31,13 @@ public class BidHistoryService {
 //        return bidHistoryRepository.findById(id)
 //                .orElseThrow(() -> new RuntimeException("Bid not found"));
 //    }
+
+    public List<BidHistoryResDto> findByAuctionId(Long auctionId, Pageable pageable) {
+        return bidHistoryRepository.findByAuctionId(auctionId, pageable)
+                .map(BidHistoryMapper::convertEntityToBidHistoryDto)
+                .getContent();
+    }
+
 
     // 비동기 save 로직
     @Async

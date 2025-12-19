@@ -8,6 +8,9 @@ import com.example.zubzub.service.AuctionBidService;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,5 +43,18 @@ public class AuctionController {
     public ResponseEntity<Void> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
         auctionBidService.placeBid(id, dto);
         return ResponseEntity.ok().build();
+    }
+
+    // 판매 내역 가져오기
+    @GetMapping("/{id}/selllist")
+    public ResponseEntity<Page<AuctionResDto>> getSellList(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(auctionService.ListSellAuction(id, pageable));
+    }
+    // 낙찰 내역 가져오기
+    @GetMapping("/{id}/winlist")
+    public ResponseEntity<Page<AuctionResDto>> getWinnerList(@PathVariable Long id,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(auctionService.ListWinnerAuction(id, pageable));
     }
 }
