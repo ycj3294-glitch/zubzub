@@ -4,6 +4,7 @@ import com.example.zubzub.service.CustomUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,11 +34,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/members/token/refresh");
     }
 
-    @Override
+    /*@Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
+
 
         String header = request.getHeader("Authorization");
 
@@ -46,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             try {
                 Jws<Claims> claims = JwtUtil.parseToken(token);
-
                 // 🔥 LOGIN 토큰만 인증 처리
                 String type = claims.getBody().get("type", String.class);
                 if (!"LOGIN".equals(type)) {
@@ -66,6 +67,66 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
+
+            } catch (JwtException e) {
+                SecurityContextHolder.clearContext();
+                log.warn("[JWT FILTER] 토큰 유효하지 않음: {}", e.getMessage());
+            }
+        }
+
+        filterChain.doFilter(request, response);
+    }*/
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String token = null;
+
+        // 1. 쿠키에서 refreshToken 또는 accessToken 찾기
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        log.info("token : {}", token);
+
+        // 2. 토큰이 있으면 검증
+        if (token != null) {
+            try {
+                log.info("1");
+                Jws<Claims> claims = JwtUtil.parseToken(token);
+                log.info("2");
+
+                // 🔥 LOGIN 토큰만 인증 처리
+                String type = claims.getBody().get("type", String.class);
+                if (!"LOGIN".equals(type)) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+                log.info("3");
+
+                String email = claims.getBody().getSubject();
+                log.info("4");
+                UserDetails userDetails =
+                        userDetailsService.loadUserByUsername(email);
+                log.info("5");
+
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
+                log.info("6");
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                log.info("7");
 
             } catch (JwtException e) {
                 SecurityContextHolder.clearContext();

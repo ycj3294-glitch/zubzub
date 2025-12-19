@@ -90,15 +90,16 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public MemberResDto login(String email, String rawPwd) {
+        log.info("로우패스워드 : {}", rawPwd);
 
         Member member = memberRepository.findByEmail(email);
         if (member == null) return null;
+        log.info("멤버는있음 : {}", member);
 
         // 🔥 상태 체크
         if (!"ACTIVE".equals(member.getMemberStatus())) {
             return null;
         }
-
         if (!passwordEncoder.matches(rawPwd, member.getPwd())) {
             return null;
         }
@@ -110,7 +111,7 @@ public class MemberServiceImpl implements MemberService {
         if (member == null) return null;
 
         String accessToken = JwtUtil.generateTokenForLogin(member.getEmail(), member.getId(), member.isAdmin());
-        String refreshToken = JwtUtil.generateRefreshToken(member.getEmail(), member.getId(), member.isAdmin());
+        String refreshToken = JwtUtil.generateTokenForLogin(member.getEmail(), member.getId(), member.isAdmin());
 
         // DTO 반환 (쿠키는 컨트롤러에서 설정)
         return new LoginMemberDto(member.getId(), member.getEmail(), member.getNickname(), accessToken, refreshToken);

@@ -11,7 +11,9 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
@@ -80,13 +82,17 @@ public class MemberApiController {
      */
     @PostMapping("/signup")
     public ResponseEntity<String> signupWithMail(@RequestBody MemberSignupReqDto req) {
+        log.info("사인업req : {}", req);
         if(memberService.isEmailExists(req.getEmail())) {
             return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
         }
+        log.info("사용중이메일 통과");
 
         memberService.savePendingMember(req);
+        log.info("펜딩멤버 통과");
         String code = String.format("%06d", new Random().nextInt(999999));
         mailService.sendVerificationEmailHtml(req.getEmail(), code);
+        log.info("센드베리피케이션 통과");
         String token = JwtUtil.generateToken(req.getEmail(), code);
 
         return ResponseEntity.ok(token);
@@ -111,7 +117,9 @@ public class MemberApiController {
      * 로그인
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginMemberDto> login(@RequestBody LoginDto req, HttpServletResponse response) {
+    public ResponseEntity<String> login(@RequestBody LoginDto req, HttpServletResponse response) {
+        log.info("리퀘스트 : {} ", req);
+
         LoginMemberDto result = memberService.loginWithJwt(req.getEmail(), req.getPwd());
         if(result == null) return ResponseEntity.status(401).build();
 
@@ -125,7 +133,7 @@ public class MemberApiController {
         response.addCookie(refreshCookie);
 
         result.setRefreshToken(null); // 클라이언트에 body로는 안 내려주고 쿠키로만 전달
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(result.getAccessToken());
     }
     //로그아웃
     @PostMapping("/logout")
@@ -139,6 +147,16 @@ public class MemberApiController {
         response.addCookie(cookie);
 
         return ResponseEntity.ok("로그아웃 완료");
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 안 됨");
+        }
+
+        // SecurityContext에 저장된 사용자 정보 반환
+        return ResponseEntity.ok(authentication.getPrincipal());
     }
 
 

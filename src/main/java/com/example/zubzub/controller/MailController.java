@@ -1,5 +1,6 @@
 package com.example.zubzub.controller;
 
+import com.example.zubzub.dto.EmailDto;
 import com.example.zubzub.dto.VerifyMailDto;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
@@ -8,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/mail")
+@RequestMapping("/api/email")
 @RequiredArgsConstructor
 public class MailController {
 
@@ -17,7 +18,8 @@ public class MailController {
 
     // 인증번호 발송 + JWT 생성
     @PostMapping("/send")
-    public ResponseEntity<String> sendMail(@RequestBody String email) {
+    public ResponseEntity<String> sendMail(@RequestBody EmailDto dto) {
+        String email = dto.getEmail();
         String code = mailService.sendVerificationEmail(email);
         String token = JwtUtil.generateToken(email, code);
         return ResponseEntity.ok(token); // JWT를 클라이언트에 전달

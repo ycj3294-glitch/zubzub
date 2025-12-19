@@ -10,7 +10,6 @@ public class MemberSignupReqDto {
 
     private String email;
     private String pwd;
-    private String passwordCheck;
     private String name;
     private String nickname;
 }
