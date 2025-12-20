@@ -12,4 +12,6 @@ public class MemberSignupReqDto {
     private String pwd;
     private String name;
     private String nickname;
+    private String token;
+    private String code;
 }

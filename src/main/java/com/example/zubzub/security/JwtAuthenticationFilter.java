@@ -83,18 +83,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String authorizationHeader = request.getHeader("Authorization");
         String token = null;
 
-        // 1. 쿠키에서 refreshToken 또는 accessToken 찾기
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("refreshToken".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
+        // "Bearer <token>" 형태라면 앞의 "Bearer " 제거
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7);
         }
+
         log.info("token : {}", token);
+
 
         // 2. 토큰이 있으면 검증
         if (token != null) {

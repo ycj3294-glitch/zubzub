@@ -110,11 +110,11 @@ public class MemberServiceImpl implements MemberService {
         MemberResDto member = login(email, rawPwd);
         if (member == null) return null;
 
-        String accessToken = JwtUtil.generateTokenForLogin(member.getEmail(), member.getId(), member.isAdmin());
-        String refreshToken = JwtUtil.generateTokenForLogin(member.getEmail(), member.getId(), member.isAdmin());
+        String accessToken = JwtUtil.generateLoginToken(member.getEmail(), member.getId(), member.isAdmin());
+        String refreshToken = JwtUtil.generateRefreshToken(member.getEmail(), member.getId(), member.isAdmin());
 
         // DTO 반환 (쿠키는 컨트롤러에서 설정)
-        return new LoginMemberDto(member.getId(), member.getEmail(), member.getNickname(), accessToken, refreshToken);
+        return new LoginMemberDto(member.getId(), member.getEmail(), member.getName(), member.getNickname(), accessToken, refreshToken);
     }
 
 

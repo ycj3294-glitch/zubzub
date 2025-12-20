@@ -8,6 +8,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,21 +82,36 @@ public class MemberApiController {
      * 회원가입
      */
     @PostMapping("/signup")
-    public ResponseEntity<String> signupWithMail(@RequestBody MemberSignupReqDto req) {
-        log.info("사인업req : {}", req);
-        if(memberService.isEmailExists(req.getEmail())) {
+    public ResponseEntity<String> signupWithMail(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestBody MemberSignupReqDto req) {
+
+        // "Bearer <token>" 형태로 들어오므로 앞의 "Bearer " 제거
+        String token = authorizationHeader.replace("Bearer ", "");
+        String code  = req.getCode();
+
+        // 이메일 중복 체크
+        if (memberService.isEmailExists(req.getEmail())) {
             return ResponseEntity.badRequest().body("이미 사용 중인 이메일입니다.");
         }
-        log.info("사용중이메일 통과");
+//        memberService.savePendingMember(req);
+//        String code = String.format("%06d", new Random().nextInt(999999));
+//        mailService.sendVerificationEmailHtml(req.getEmail(), code);
+//        String token = JwtUtil.generateSignupToken(req.getEmail(), code);
 
-        memberService.savePendingMember(req);
-        log.info("펜딩멤버 통과");
-        String code = String.format("%06d", new Random().nextInt(999999));
-        mailService.sendVerificationEmailHtml(req.getEmail(), code);
-        log.info("센드베리피케이션 통과");
-        String token = JwtUtil.generateToken(req.getEmail(), code);
+        // null 체크
+        if (code == null) {
+            return ResponseEntity.badRequest().body("인증번호가 누락되었습니다.");
+        }
 
-        return ResponseEntity.ok(token);
+        // 토큰 검증
+        boolean isValid = JwtUtil.validateToken(token, code);
+
+        if (isValid) {
+            memberService.completeSignup(req); // 실제 회원가입 처리
+            return ResponseEntity.ok("회원가입 성공");
+        }
+        return ResponseEntity.badRequest().body("인증 정보가 유효하지 않습니다.");
     }
 
 
@@ -117,24 +133,30 @@ public class MemberApiController {
      * 로그인
      */
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginDto req, HttpServletResponse response) {
-        log.info("리퀘스트 : {} ", req);
+    public ResponseEntity<LoginMemberDto> login(@RequestBody LoginDto req,
+                                                HttpServletResponse response) {
+        log.info("로그인 요청: {}", req);
 
+        // 서비스에서 로그인 처리
         LoginMemberDto result = memberService.loginWithJwt(req.getEmail(), req.getPwd());
-        if(result == null) return ResponseEntity.status(401).build();
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        log.info("[LOGIN] AccessToken: {}", result.getAccessToken());
-        log.info("[LOGIN] RefreshToken (쿠키용): {}", result.getRefreshToken());
-
+        // RefreshToken → HttpOnly 쿠키에 저장
         Cookie refreshCookie = new Cookie("refreshToken", result.getRefreshToken());
         refreshCookie.setHttpOnly(true);
         refreshCookie.setPath("/");
         refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
         response.addCookie(refreshCookie);
 
-        result.setRefreshToken(null); // 클라이언트에 body로는 안 내려주고 쿠키로만 전달
-        return ResponseEntity.ok(result.getAccessToken());
+        // 클라이언트에는 RefreshToken을 내려주지 않음
+        result.setRefreshToken(null);
+
+        log.info("[LOGIN] AccessToken 발급 완료");
+        return ResponseEntity.ok(result);
     }
+
     //로그아웃
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
@@ -148,18 +170,6 @@ public class MemberApiController {
 
         return ResponseEntity.ok("로그아웃 완료");
     }
-
-    @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 안 됨");
-        }
-
-        // SecurityContext에 저장된 사용자 정보 반환
-        return ResponseEntity.ok(authentication.getPrincipal());
-    }
-
-
 
     @GetMapping("/token/refresh")
     public ResponseEntity<String> refreshAccessToken(
@@ -176,7 +186,7 @@ public class MemberApiController {
             long memberId = claims.getBody().get("memberId", Long.class);
             boolean isAdmin = "ADMIN".equals(claims.getBody().get("role", String.class));
 
-            String newAccessToken = JwtUtil.generateTokenForLogin(email, memberId, isAdmin);
+            String newAccessToken = JwtUtil.generateLoginToken(email, memberId, isAdmin);
 
             log.info("[TOKEN REFRESH] 자동 재발급 성공: memberId={}, email={}, newAccessToken={}",
                     memberId, email, newAccessToken);
