@@ -11,12 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -70,9 +72,17 @@ public class AuctionController {
 
     // 소규모 경매 리스트 보여주기
     @GetMapping("/minorlist")
-    public ResponseEntity<Page<AuctionResDto>> getMinorList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(auctionService.getMinorList(pageable));
+    public ResponseEntity<?> getMinorList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "12") int size) {
+        try {
+            Pageable pageable = PageRequest.of(page, size);
+            Page<AuctionResDto> list = auctionService.getMinorList(pageable);
+            System.out.println("Page: " + page + ", Size: " + size);
+            return ResponseEntity.ok(list);
+        } catch (Exception e) {
+            e.printStackTrace(); // 서버 콘솔에서 실제 에러 확인 가능
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 
     // 대규모 경매 리스트 날짜별로 보여주기

@@ -171,13 +171,14 @@ public class AuctionService {
     }
     // 일반 경매 리스트 가져오기
     public Page<AuctionResDto> getMinorList(Pageable pageable) {
-        Page<Auction> auction = auctionRepository.findByAuctionType("일반", pageable);
+
+        Page<Auction> auction = auctionRepository.findByAuctionType(AuctionType.MINOR, pageable);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);
     }
 
     // 프리미엄 경매 리스트 날짜별로 가져오기
     public List<AuctionResDto> getMajorList(LocalDateTime start, LocalDateTime end) {
-        List<Auction> auction = auctionRepository.findByAuctionTypeAndStartTimeBetween("프리미엄", start, end);
+        List<Auction> auction = auctionRepository.findByAuctionTypeAndStartTimeBetween(AuctionType.MAJOR, start, end);
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
 }

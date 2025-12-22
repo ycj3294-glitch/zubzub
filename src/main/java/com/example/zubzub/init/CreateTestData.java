@@ -75,8 +75,14 @@ public class CreateTestData implements CommandLineRunner {
         // 🔹 하루에 프리미엄 3개씩, 5일치 생성
         for (int d = 0; d < 5; d++) {
             LocalDateTime dayStart = today.minusDays(d);
+            LocalDateTime dayEnd = dayStart.withHour(23).withMinute(59).withSecond(59); // 그 날 끝
 
             for (int i = 1; i <= 3; i++) {
+                // 시작 시간은 dayStart ~ dayEnd-2h 범위에서 랜덤
+                long maxStartHour = Math.max(0, dayEnd.getHour() - 2); // 종료시간이 그 날을 넘지 않도록
+                LocalDateTime startTime = dayStart.plusHours(random.nextInt((int) maxStartHour + 1));
+                LocalDateTime endTime = startTime.plusHours(2); // 종료시간은 항상 2시간 차이
+
                 Auction auction = Auction.builder()
                         .auctionType(AuctionType.MAJOR)
                         .category(categories[random.nextInt(categories.length)])
@@ -86,9 +92,10 @@ public class CreateTestData implements CommandLineRunner {
                         .startPrice(10000 + random.nextInt(990000))
                         .minBidUnit(100)
                         .auctionStatus(AuctionStatus.values()[random.nextInt(AuctionStatus.values().length)])
-                        .startTime(dayStart.minusHours(random.nextInt(24)))
-                        .endTime(dayStart.plusHours(random.nextInt(72)))
+                        .startTime(startTime)
+                        .endTime(endTime)
                         .build();
+
                 auctions.add(auction);
             }
         }

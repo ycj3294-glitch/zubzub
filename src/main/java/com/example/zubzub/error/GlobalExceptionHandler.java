@@ -18,6 +18,7 @@ public class GlobalExceptionHandler {
     // 처리되지 않은 모든 예외
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleException(Exception e) {
+        e.printStackTrace();
         log.error("서버 내부 예외 발생", e);
         Map<String, Object> body = new HashMap<>();
         body.put("code", "INTERNAL_ERROR");
