@@ -2,10 +2,7 @@ package com.example.zubzub.service;
 
 import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.dto.BidHistoryCreateDto;
-import com.example.zubzub.entity.Auction;
-import com.example.zubzub.entity.AuctionStatus;
-import com.example.zubzub.entity.BidHistory;
-import com.example.zubzub.entity.Member;
+import com.example.zubzub.entity.*;
 import com.example.zubzub.mapper.BidHistoryMapper;
 import com.example.zubzub.repository.MemberRepository;
 import lombok.*;
@@ -41,7 +38,7 @@ public class AuctionBidService {
         if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
 
         // 메이저 경매의 경우
-        if (auction.getAuctionType().equals("MAJOR")) {
+        if (auction.getAuctionType() == AuctionType.MAJOR) {
             // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
             if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
 
@@ -80,7 +77,7 @@ public class AuctionBidService {
         }
 
         // 마이너 경매의 경우
-        else if (auction.getAuctionType().equals("MINOR")) {
+        else if (auction.getAuctionType() == AuctionType.MINOR) {
             if (bidHistory.getPrice() > auction.getFinalPrice()) {
 
                 // 입찰금액, 입찰자 지정
