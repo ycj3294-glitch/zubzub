@@ -14,6 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Slf4j
 @RestController
 @CrossOrigin(origins = {"http://192.168.0.93:3000", "http://localhost:3000"}) // 동일 출처 에러 방지용
@@ -62,5 +66,21 @@ public class AuctionController {
     public ResponseEntity<String> updateNormalAuction(@PathVariable Long id, @RequestBody AuctionCreateDto req) {
         auctionService.updateNormalAuction(id, req);
         return ResponseEntity.ok("수정이 완료되었습니다.");
+    }
+
+    // 소규모 경매 리스트 보여주기
+    @GetMapping("/minorlist")
+    public ResponseEntity<Page<AuctionResDto>> getMinorList(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(auctionService.getMinorList(pageable));
+    }
+
+    // 대규모 경매 리스트 날짜별로 보여주기
+    @GetMapping("/majorlist/by-date")
+    public ResponseEntity<List<AuctionResDto>> getMajorList(@RequestParam String date) {
+        LocalDate localDate = LocalDate.parse(date); // 문자열을 날짜로
+        LocalDateTime start = localDate.atStartOfDay();
+        LocalDateTime end = start.plusDays(1).minusSeconds(1); // 시작시간 끝시간 지정(하루범위를 지정)
+        return ResponseEntity.ok(auctionService.getMajorList(start, end));
     }
 }
