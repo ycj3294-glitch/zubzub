@@ -1,6 +1,7 @@
 package com.example.zubzub.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -17,12 +18,15 @@ public class BidHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long auctionId;
+    @ManyToOne
+    @JoinColumn(name = "auction_id", nullable = false)
+    private Auction auction;
 
-    @Column(nullable = false)
-    private Long memberId;
+    @ManyToOne
+    @JoinColumn(name = "bidder_id", nullable = false)
+    private Member bidder;
 
+    @Min(1)
     @Column(nullable = false)
     private int price;
 

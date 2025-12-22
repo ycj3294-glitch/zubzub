@@ -4,8 +4,11 @@ import com.example.zubzub.dto.AuctionCreateDto;
 import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.AuctionStatus;
+import com.example.zubzub.entity.AuctionType;
+import com.example.zubzub.entity.Member;
 import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.repository.AuctionRepository;
+import com.example.zubzub.repository.MemberRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
@@ -28,25 +31,38 @@ import java.util.stream.Collectors;
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
+    private final MemberRepository memberRepository;
     private final AuctionSchedulerService auctionSchedulerService;
     // 실시간성을 위한 캐시 사용
     private final ConcurrentHashMap<Long, Auction> cache = new ConcurrentHashMap<>();
 
     // CREATE
     public Boolean createAuction(AuctionCreateDto dto) {
-        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
+        Member seller = memberRepository.findById(dto.getSellerId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
+
+        // 임시 시작 종료시간 넣기
+        if (auction.getAuctionType() == AuctionType.MAJOR) {
+            auction.setStartTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
+            auction.setEndTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
+        }
+
         // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
         auction.setAuctionStatus(AuctionStatus.READY);
         // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
-        try {
-            // 시작 종료 타이머 걸기
-            auctionSchedulerService.scheduleAuctionStart(savedAuction);
-            auctionSchedulerService.scheduleAuctionEnd(savedAuction);
-        } catch (SchedulerException e) {
-            log.error("타이머 지정 실패 : {}", e.getMessage());
-            auctionRepository.deleteById(savedAuction.getId());
-            return false;
+
+        if (savedAuction.getAuctionType() == AuctionType.MINOR) {
+            try {
+                // 시작 종료 타이머 걸기
+                auctionSchedulerService.scheduleAuctionStart(savedAuction);
+                auctionSchedulerService.scheduleAuctionEnd(savedAuction);
+            } catch (SchedulerException e) {
+                log.error("타이머 지정 실패 : {}", e.getMessage());
+                auctionRepository.deleteById(savedAuction.getId());
+                return false;
+            }
         }
         return true;
     }
@@ -110,7 +126,9 @@ public class AuctionService {
     }
     // create 대규모
     public Boolean createBigAuction(AuctionCreateDto dto) {
-        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto);
+        Member seller = memberRepository.findById(dto.getSellerId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
         // 경매생성시 자동으로 승인대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
         auction.setAuctionStatus(AuctionStatus.PENDING);
         // DB에 넣어서 ID 자동 채우기
@@ -142,9 +160,9 @@ public class AuctionService {
     }
     // 일반 경매 수정
     @Transactional
-    public void updateNormalAuction(Long auctionid, AuctionCreateDto req) {
+    public void updateNormalAuction(Long auctionId, AuctionCreateDto req) {
         // 해당 경매 있는지 확인
-        Auction auction = auctionRepository.findById(auctionid)
+        Auction auction = auctionRepository.findById(auctionId)
                 .orElseThrow(()-> new IllegalArgumentException("해당 경매는 없습니다."));
         // 해당 경매 판매자인지 확인(토큰 고려해야함 지금 안해)
         // 데이터 수정

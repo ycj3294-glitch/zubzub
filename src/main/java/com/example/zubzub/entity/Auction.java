@@ -2,6 +2,7 @@ package com.example.zubzub.entity;
 
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -18,33 +19,33 @@ public class Auction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)   // DB에 문자열로 저장
     @Column(nullable = false)
-    private String auctionType;
+    private AuctionType auctionType;
 
-    @Column(nullable = false)
-    private String category;
-
-    @Column(nullable = false)
-    private Long sellerId;
-
-    @Column(nullable = false, length = 50)
-    private String itemName;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="seller_Id", nullable = false)
+    private Member seller;
 
     @Column(nullable = false)
     private String itemDesc;
 
     @Column(nullable = false)
-    private int startPrice;
+    private String category;
 
-    @Column
-    private int finalPrice;
+    @Column(nullable = false, length = 50)
+    private String itemName;
 
     @Column
     private String itemImg;
 
-    @Enumerated(EnumType.STRING)   // DB에 문자열로 저장
+    @Min(1)
     @Column(nullable = false)
-    private AuctionStatus auctionStatus;
+    private int startPrice;
+
+    @Min(1)
+    @Column(nullable = false)
+    private int minBidUnit;
 
     @Column(nullable = false)
     private LocalDateTime startTime;
@@ -52,9 +53,17 @@ public class Auction {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
+    @Enumerated(EnumType.STRING)   // DB에 문자열로 저장
+    @Column(nullable = false)
+    private AuctionStatus auctionStatus;
+
+    @Column
+    private int finalPrice;
+
     @Column
     private LocalDateTime extendedEndTime;
 
-    @Column
-    private Long winnerId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="winner_id")
+    private Member winner;
 }

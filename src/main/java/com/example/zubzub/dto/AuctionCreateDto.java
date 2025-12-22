@@ -1,5 +1,6 @@
 package com.example.zubzub.dto;
 
+import com.example.zubzub.entity.AuctionType;
 import jakarta.persistence.Column;
 import lombok.*;
 
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class AuctionCreateDto {
 
-    private String auctionType;
+    private AuctionType auctionType;
 
     private String category;
 
@@ -21,6 +22,8 @@ public class AuctionCreateDto {
     private String itemDesc;
 
     private int startPrice;
+
+    private int minBidUnit;
 
     private String itemImg;
 

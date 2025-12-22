@@ -6,12 +6,13 @@ import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.dto.BidHistoryResDto;
 import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.BidHistory;
+import com.example.zubzub.entity.Member;
 
 public class BidHistoryMapper {
-    public static BidHistory convertBidHistoryDtoToEntity(BidHistoryCreateDto dto) {
+    public static BidHistory convertBidHistoryDtoToEntity(BidHistoryCreateDto dto, Auction auction, Member bidder) {
         return BidHistory.builder()
-                .auctionId((dto.getAuctionId()))
-                .memberId(dto.getMemberId())
+                .auction(auction)
+                .bidder(bidder)
                 .price(dto.getPrice())
                 .build();
     }
@@ -19,8 +20,8 @@ public class BidHistoryMapper {
     public static BidHistoryResDto convertEntityToBidHistoryDto(BidHistory bidHistory) {
         return BidHistoryResDto.builder()
                 .id(bidHistory.getId())
-                .auctionId(bidHistory.getAuctionId())
-                .memberId(bidHistory.getMemberId())
+                .auctionId(bidHistory.getAuction().getId())
+                .bidderId(bidHistory.getBidder().getId())
                 .price(bidHistory.getPrice())
                 .bidTime(bidHistory.getBidTime())
                 .build();

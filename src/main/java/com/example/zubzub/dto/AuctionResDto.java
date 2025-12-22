@@ -1,6 +1,7 @@
 package com.example.zubzub.dto;
 
 import com.example.zubzub.entity.AuctionStatus;
+import com.example.zubzub.entity.AuctionType;
 import jakarta.persistence.Column;
 import lombok.*;
 
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 public class AuctionResDto {
     private Long id;
 
-    private String auctionType;
+    private AuctionType auctionType;
 
     private String category;
 
@@ -25,6 +26,8 @@ public class AuctionResDto {
     private int startPrice;
 
     private int finalPrice;
+
+    private int minBidUnit;
 
     private String itemImg;
 

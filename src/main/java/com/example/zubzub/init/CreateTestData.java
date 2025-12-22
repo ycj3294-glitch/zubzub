@@ -2,12 +2,15 @@ package com.example.zubzub.init;
 
 import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.AuctionStatus;
+import com.example.zubzub.entity.AuctionType;
 import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.AuctionRepository;
 import com.example.zubzub.repository.MemberRepository;
+import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,11 +26,23 @@ public class CreateTestData implements CommandLineRunner {
 
     private final MemberRepository memberRepository;
     private final AuctionRepository auctionRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private final Random random = new Random();
 
     @Override
     public void run(String... args) throws Exception {
+
+        Member me = new Member();
+        me.setEmail("dfgr56@naver.com");
+        me.setPwd(passwordEncoder.encode("!Q2w3e4r"));
+        me.setName("이용현");
+        me.setNickname("이용현");
+        me.setAddr("서울시 강남구");
+        me.setCredit(random.nextInt(5000));
+        me.setAdmin(false);
+        me.setMemberStatus("ACTIVE");
+        memberRepository.save(me);
 
         // ===============================
         // 1️⃣ 회원 10명 생성
@@ -63,12 +78,13 @@ public class CreateTestData implements CommandLineRunner {
 
             for (int i = 1; i <= 3; i++) {
                 Auction auction = Auction.builder()
-                        .auctionType("프리미엄")
+                        .auctionType(AuctionType.MAJOR)
                         .category(categories[random.nextInt(categories.length)])
-                        .sellerId(members.get(random.nextInt(members.size())).getId())
+                        .seller(members.get(random.nextInt(members.size())))
                         .itemName("프리미엄 " + items[random.nextInt(items.length)] + " " + i)
                         .itemDesc("설명 " + i)
                         .startPrice(10000 + random.nextInt(990000))
+                        .minBidUnit(100)
                         .auctionStatus(AuctionStatus.values()[random.nextInt(AuctionStatus.values().length)])
                         .startTime(dayStart.minusHours(random.nextInt(24)))
                         .endTime(dayStart.plusHours(random.nextInt(72)))
@@ -81,12 +97,13 @@ public class CreateTestData implements CommandLineRunner {
         for (int i = 1; i <= 15; i++) {
             LocalDateTime randomDay = today.minusDays(random.nextInt(5));
             Auction auction = Auction.builder()
-                    .auctionType("일반")
+                    .auctionType(AuctionType.MINOR)
                     .category(categories[random.nextInt(categories.length)])
-                    .sellerId(members.get(random.nextInt(members.size())).getId())
+                    .seller(members.get(random.nextInt(members.size())))
                     .itemName("일반 " + items[random.nextInt(items.length)] + " " + i)
                     .itemDesc("설명 " + i)
                     .startPrice(10000 + random.nextInt(990000))
+                    .minBidUnit(100)
                     .auctionStatus(AuctionStatus.values()[random.nextInt(AuctionStatus.values().length)])
                     .startTime(randomDay.minusHours(random.nextInt(24)))
                     .endTime(randomDay.plusHours(random.nextInt(72)))

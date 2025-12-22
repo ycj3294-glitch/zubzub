@@ -5,7 +5,9 @@ import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.entity.BidHistory;
+import com.example.zubzub.entity.Member;
 import com.example.zubzub.mapper.BidHistoryMapper;
+import com.example.zubzub.repository.MemberRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -22,16 +24,18 @@ public class AuctionBidService {
     private final AuctionService auctionService;
     private final AuctionSchedulerService auctionSchedulerService;
     private final BidHistoryService bidHistoryService;
+    private final MemberRepository memberRepository;
     private final Broadcaster broadcaster;
 
     // 입찰 요청을 받았을 때 실행할 로직
     public synchronized boolean placeBid(Long auctionId, BidHistoryCreateDto dto) {
 
         // 입찰 대상 경매 불러오기
-        BidHistory bidHistory = BidHistoryMapper.convertBidHistoryDtoToEntity(dto);
-        bidHistory.setAuctionId(auctionId);
-        bidHistory.setBidTime(LocalDateTime.now());
         Auction auction = auctionService.getAuctionById(auctionId);
+        Member bidder = memberRepository.findById(dto.getBidderId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+        BidHistory bidHistory = BidHistoryMapper.convertBidHistoryDtoToEntity(dto, auction, bidder);
+        bidHistory.setBidTime(LocalDateTime.now());
 
         // 경매중 상태가 아니면 입찰 false
         if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
@@ -40,6 +44,9 @@ public class AuctionBidService {
         if (auction.getAuctionType().equals("MAJOR")) {
             // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
             if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
+
+            // 입찰가가 최소상위입찰가보다 낮으면 입찰 false
+            if (bidHistory.getPrice() < auction.getFinalPrice() + auction.getMinBidUnit()) return false;
 
             // 연장 종료 시간이 비어있으면 기본 종료시간으로 채워주기
             if (auction.getExtendedEndTime() == null) {
@@ -61,7 +68,7 @@ public class AuctionBidService {
 
             // 입찰금액, 입찰자 지정
             auction.setFinalPrice(bidHistory.getPrice());
-            auction.setWinnerId(bidHistory.getMemberId());
+            auction.setWinner(bidHistory.getBidder());
 
             // 캐시에 경매 정보 업데이트
             auctionService.updateAuction(auction);
@@ -78,7 +85,7 @@ public class AuctionBidService {
 
                 // 입찰금액, 입찰자 지정
                 auction.setFinalPrice(bidHistory.getPrice());
-                auction.setWinnerId(bidHistory.getMemberId());
+                auction.setWinner(bidHistory.getBidder());
 
                 // 캐시에 경매 정보 업데이트
                 auctionService.updateAuction(auction);

@@ -9,6 +9,6 @@ import lombok.*;
 @Builder
 public class BidHistoryCreateDto {
     private Long auctionId;
-    private Long memberId;
+    private Long bidderId;
     private int price;
 }
