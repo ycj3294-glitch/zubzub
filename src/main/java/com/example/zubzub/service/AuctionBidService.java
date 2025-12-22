@@ -36,38 +36,55 @@ public class AuctionBidService {
         // 경매중 상태가 아니면 입찰 false
         if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
 
-        // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
-        if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
+        // 메이저 경매의 경우
+        if (auction.getAuctionType().equals("MAJOR")) {
+            // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
+            if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
 
-        // 연장 종료 시간이 비어있으면 기본 종료시간으로 채워주기
-        if (auction.getExtendedEndTime() == null) {
-            auction.setExtendedEndTime(auction.getEndTime());
+            // 연장 종료 시간이 비어있으면 기본 종료시간으로 채워주기
+            if (auction.getExtendedEndTime() == null) {
+                auction.setExtendedEndTime(auction.getEndTime());
+            }
+
+            // 입찰후 남은시간이 1분미만이라면 연장종료시간을 입찰시간 + 1분으로 갱신
+            if (Duration.between(bidHistory.getBidTime(), auction.getExtendedEndTime()).toMinutes() < 1) {
+                auction.setExtendedEndTime(bidHistory.getBidTime().plusMinutes(1));
+                try {
+                    auctionSchedulerService.rescheduleAuctionEnd(auction);
+                    log.info("타이머 재지정 : {}", auction);
+
+                } catch (SchedulerException e) {
+                    log.error("타이머 지정 실패 : {}", e.getMessage());
+                    return false;
+                }
+            }
+
+            // 입찰금액, 입찰자 지정
+            auction.setFinalPrice(bidHistory.getPrice());
+            auction.setWinnerId(bidHistory.getMemberId());
+
+            // 캐시에 경매 정보 업데이트
+            auctionService.updateAuction(auction);
+            log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
+
+            // 브로드캐스트
+            broadcaster.broadcastAuction(auction);
+            log.info("Broadcasted auction {}", auction.getId());
         }
 
-        // 입찰후 남은시간이 1분미만이라면 연장종료시간을 입찰시간 + 1분으로 갱신
-        if (Duration.between(bidHistory.getBidTime(), auction.getExtendedEndTime()).toMinutes() < 1) {
-            auction.setExtendedEndTime(bidHistory.getBidTime().plusMinutes(1));
-            try {
-                auctionSchedulerService.rescheduleAuctionEnd(auction);
-                log.info("타이머 재지정 : {}", auction);
+        // 마이너 경매의 경우
+        else if (auction.getAuctionType().equals("MINOR")) {
+            if (bidHistory.getPrice() > auction.getFinalPrice()) {
 
-            } catch (SchedulerException e) {
-                log.error("타이머 지정 실패 : {}", e.getMessage());
-                return false;
+                // 입찰금액, 입찰자 지정
+                auction.setFinalPrice(bidHistory.getPrice());
+                auction.setWinnerId(bidHistory.getMemberId());
+
+                // 캐시에 경매 정보 업데이트
+                auctionService.updateAuction(auction);
+                log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
             }
         }
-
-        // 입찰자, 입찰금액 지정
-        auction.setWinnerId(bidHistory.getMemberId());
-        auction.setFinalPrice(bidHistory.getPrice());
-
-        // 캐시에 경매 정보 업데이트
-        auctionService.updateAuction(auction);
-        log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
-
-        // 브로드캐스트
-        broadcaster.broadcastAuction(auction);
-        log.info("Broadcasted auction {}", auction.getId());
 
         // 입찰기록만 비동기 DB 저장
         bidHistoryService.saveBidHistoryAsync(bidHistory);
