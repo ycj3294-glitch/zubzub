@@ -172,7 +172,6 @@ public class MemberApiController {
                 .secure(false) // 운영환경은 true, 개발환경은 false
                 .path("/")
                 .sameSite("Lax")
-                .domain("localhost")
                 .maxAge(0) // 즉시 만료
                 .build();
 

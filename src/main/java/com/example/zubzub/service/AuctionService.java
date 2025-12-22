@@ -42,14 +42,20 @@ public class AuctionService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
 
-        // 임시 시작 종료시간 넣기
+        // 메이저에서 임시 시작 종료시간 넣기
         if (auction.getAuctionType() == AuctionType.MAJOR) {
             auction.setStartTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
             auction.setEndTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
+
         }
 
-        // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
-        auction.setAuctionStatus(AuctionStatus.READY);
+        if (auction.getAuctionType() == AuctionType.MAJOR) {
+            // 경매생성시 자동으로 승인대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
+            auction.setAuctionStatus(AuctionStatus.PENDING);
+        } else if (auction.getAuctionType() == AuctionType.MINOR) {
+            // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
+            auction.setAuctionStatus(AuctionStatus.READY);
+        }
         // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
 
@@ -123,17 +129,6 @@ public class AuctionService {
     public Page<AuctionResDto> ListWinnerAuction(Long id, Pageable pageable) {
         Page<Auction> auction = auctionRepository.findByWinnerId(id, pageable);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);
-    }
-    // create 대규모
-    public Boolean createBigAuction(AuctionCreateDto dto) {
-        Member seller = memberRepository.findById(dto.getSellerId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
-        // 경매생성시 자동으로 승인대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
-        auction.setAuctionStatus(AuctionStatus.PENDING);
-        // DB에 넣어서 ID 자동 채우기
-        Auction savedAuction = auctionRepository.save(auction);
-        return true;
     }
 
     // 대규모 경매 관리자 승인
