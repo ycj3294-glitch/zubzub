@@ -4,6 +4,7 @@ import com.example.zubzub.dto.LoginMemberDto;
 import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.dto.MemberUpdateReqDto;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -30,7 +31,8 @@ public interface MemberService {
        로그인
        ========================= */
     MemberResDto login(String email, String rawPwd);
-    LoginMemberDto loginWithJwt(String email, String rawPwd);
+    LoginMemberDto loginWithPwd(String email, String rawPwd);
+    LoginMemberDto loginWithJwt(Authentication authentication);
 
 
     /* =========================

@@ -12,6 +12,7 @@ import com.example.zubzub.service.MemberService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -106,7 +107,21 @@ public class MemberServiceImpl implements MemberService {
 
         return new MemberResDto(member);
     }
-    public LoginMemberDto loginWithJwt(String email, String rawPwd) {
+
+    public LoginMemberDto loginWithJwt(Authentication authentication) {
+        if(authentication == null) return null;
+
+        // principal에서 유저 정보 꺼내기
+        Member member = (Member) authentication.getPrincipal();
+
+        String accessToken = JwtUtil.generateLoginToken(member.getEmail(), member.getId(), member.isAdmin());
+        String refreshToken = "";
+
+        // DTO 반환 (쿠키는 컨트롤러에서 설정)
+        return new LoginMemberDto(member.getId(), member.getEmail(), member.getName(), member.getNickname(), accessToken, refreshToken);
+    }
+
+    public LoginMemberDto loginWithPwd(String email, String rawPwd) {
         MemberResDto member = login(email, rawPwd);
         if (member == null) return null;
 
@@ -116,6 +131,8 @@ public class MemberServiceImpl implements MemberService {
         // DTO 반환 (쿠키는 컨트롤러에서 설정)
         return new LoginMemberDto(member.getId(), member.getEmail(), member.getName(), member.getNickname(), accessToken, refreshToken);
     }
+
+
 
 
     /* =========================

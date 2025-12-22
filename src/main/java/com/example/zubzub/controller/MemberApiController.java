@@ -12,13 +12,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
+import java.time.Duration;
 import java.util.Random;
 
 @RestController
@@ -127,8 +130,6 @@ public class MemberApiController {
     }
 
 
-
-
     /**
      * 로그인
      */
@@ -138,17 +139,21 @@ public class MemberApiController {
         log.info("로그인 요청: {}", req);
 
         // 서비스에서 로그인 처리
-        LoginMemberDto result = memberService.loginWithJwt(req.getEmail(), req.getPwd());
+        LoginMemberDto result = memberService.loginWithPwd(req.getEmail(), req.getPwd());
         if (result == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         // RefreshToken → HttpOnly 쿠키에 저장
-        Cookie refreshCookie = new Cookie("refreshToken", result.getRefreshToken());
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7일
-        response.addCookie(refreshCookie);
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", result.getRefreshToken())
+                .httpOnly(true)
+                .secure(false) // 운영환경은 true, 개발환경은 false
+                .path("/")
+                .sameSite("Lax")
+                .domain("localhost")
+                .maxAge(Duration.ofDays(7))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
         // 클라이언트에는 RefreshToken을 내려주지 않음
         result.setRefreshToken(null);
@@ -161,15 +166,29 @@ public class MemberApiController {
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response) {
 
-        Cookie cookie = new Cookie("refreshToken", null);
-        cookie.setHttpOnly(true);
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // 즉시 삭제
+        // RefreshToken 쿠키 삭제 (SameSite 옵션 포함)
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false) // 운영환경은 true, 개발환경은 false
+                .path("/")
+                .sameSite("Lax")
+                .domain("localhost")
+                .maxAge(0) // 즉시 만료
+                .build();
 
-        response.addCookie(cookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
+
+        log.info("[LOGOUT] RefreshToken 삭제 완료");
 
         return ResponseEntity.ok("로그아웃 완료");
     }
+
+//    @GetMapping("/me")
+//    public ResponseEntity<LoginMemberDto> me (Authentication authentication) {
+//        LoginMemberDto result =
+//        return ResponseEntity.ok(result);
+//    }
+
 
     @GetMapping("/token/refresh")
     public ResponseEntity<String> refreshAccessToken(
@@ -198,9 +217,6 @@ public class MemberApiController {
             return ResponseEntity.status(401).body("리프레시 토큰 만료 또는 유효하지 않음");
         }
     }
-
-
-
 
     // 비밀번호 찾기 요청 (메일 발송)
     @PostMapping("/password-reset/request")
