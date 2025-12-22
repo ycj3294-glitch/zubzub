@@ -16,6 +16,7 @@ public class CustomUserDetails implements UserDetails {
     private final Long id;
     private final String email;
     private final String password;
+    private final String name;
     private final String nickname;
     private final int credit;
     private final String profileImg;
@@ -27,6 +28,7 @@ public class CustomUserDetails implements UserDetails {
         this.id = member.getId();
         this.email = member.getEmail();
         this.password = member.getPwd();
+        this.name = member.getName();
         this.nickname = member.getNickname();
         this.credit = member.getCredit();
         this.profileImg = member.getProfileImg();

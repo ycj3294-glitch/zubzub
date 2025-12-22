@@ -3,6 +3,7 @@ package com.example.zubzub.controller;
 import com.example.zubzub.dto.*;
 import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.MemberRepository;
+import com.example.zubzub.security.CustomUserDetails;
 import com.example.zubzub.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -172,6 +174,7 @@ public class MemberApiController {
                 .secure(false) // 운영환경은 true, 개발환경은 false
                 .path("/")
                 .sameSite("Lax")
+                .domain("localhost")
                 .maxAge(0) // 즉시 만료
                 .build();
 
@@ -182,11 +185,17 @@ public class MemberApiController {
         return ResponseEntity.ok("로그아웃 완료");
     }
 
-//    @GetMapping("/me")
-//    public ResponseEntity<LoginMemberDto> me (Authentication authentication) {
-//        LoginMemberDto result =
-//        return ResponseEntity.ok(result);
-//    }
+    @GetMapping("/me")
+    public ResponseEntity<LoginMemberDto> checkLogin (Authentication authentication) {
+        if (authentication == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        CustomUserDetails cu = (CustomUserDetails) authentication.getPrincipal();
+        LoginMemberDto lm = new LoginMemberDto();
+        lm.setId(cu.getId());
+        lm.setEmail(cu.getEmail());
+        lm.setName(cu.getName());
+        lm.setNickname(cu.getNickname());
+        return ResponseEntity.ok(lm);
+    }
 
 
     @GetMapping("/token/refresh")
