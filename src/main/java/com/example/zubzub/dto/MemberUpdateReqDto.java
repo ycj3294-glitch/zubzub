@@ -8,6 +8,7 @@ import lombok.*;
 public class MemberUpdateReqDto {
 
     private String nickname;
+    private String name;
     private String pwd;
     private String addr;
     private String profileImg;

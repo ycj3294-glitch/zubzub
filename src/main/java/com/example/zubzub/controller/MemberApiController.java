@@ -1,18 +1,14 @@
 package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.*;
-import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.MemberRepository;
 import com.example.zubzub.security.CustomUserDetails;
 import com.example.zubzub.service.MemberService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,7 +20,6 @@ import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
 import java.time.Duration;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/api/members")

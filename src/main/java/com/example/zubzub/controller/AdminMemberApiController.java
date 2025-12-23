@@ -3,7 +3,6 @@ package com.example.zubzub.controller;
 import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.AuctionTimeUpdateRequest;
 import com.example.zubzub.dto.MemberResDto;
-import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
