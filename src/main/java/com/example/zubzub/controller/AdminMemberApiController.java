@@ -3,6 +3,7 @@ package com.example.zubzub.controller;
 import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.AuctionTimeUpdateRequest;
 import com.example.zubzub.dto.MemberResDto;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -58,30 +61,28 @@ public class AdminMemberApiController {
         memberService.delete(id);
         return ResponseEntity.ok("회원이 삭제되었습니다.");
     }
+
     // 아래로 jwt 관련 없는 작업
-    // 프리미엄 경매 승인
-    @PostMapping("/{id}/approve")
-    public ResponseEntity<String> approveAuction(@PathVariable Long id) {
-        auctionService.approveAuction(id);
-        return ResponseEntity.ok("승인되었습니다.");
-    }
+
+
     // 프리미엄 경매 일정 배정
-    @PostMapping("/settime")
+    @PostMapping("/approve")
     public ResponseEntity<String> setTime(@RequestBody AuctionTimeUpdateRequest req) {
-        auctionService.setTime(req.getId(), req.getStartTime(), req.getEndTime());
-        return ResponseEntity.ok("시간이 배정되었습니다.");
+        Long auctionId = req.getId();
+        LocalDateTime start = req.getStartTime();
+        LocalDateTime end = start.plusHours(2);
+        if(!end.toLocalDate().isEqual(start.toLocalDate())) {
+            end =start.toLocalDate().atTime(23, 59);
+        }
+        auctionService.approveAuction(auctionId);
+        auctionService.setTime(auctionId, start, end);
+        return ResponseEntity.ok("승인되고 시간이 배정되었습니다.");
     }
 
     // 대규모 경매 승인대기 목록 가져오기
     @GetMapping("/pending")
     public ResponseEntity<List<AuctionResDto>> getPendingList() {
-        log.info("요청받음");
+        log.info("승인 대기 목록 요청받음");
         return ResponseEntity.ok(auctionService.getPendingList());
     }
-
-//    // 대규모 경매 승인 및 일정 배정
-//    @PutMapping("/approve/{id}")
-//    public ResponseEntity<Boolean> approveAuction(@PathVariable Long id, @RequestBody LocalDateTime starttime) {
-//        return ResponseEntity.ok()
-//    }
 }

@@ -12,5 +12,4 @@ import java.time.LocalDateTime;
 public class AuctionTimeUpdateRequest {
     private Long id;
     private LocalDateTime startTime;
-    private LocalDateTime endTime;
 }
