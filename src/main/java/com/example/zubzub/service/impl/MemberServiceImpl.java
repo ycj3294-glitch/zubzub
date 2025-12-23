@@ -4,6 +4,7 @@ import com.example.zubzub.dto.LoginMemberDto;
 import com.example.zubzub.dto.MemberResDto;
 import com.example.zubzub.dto.MemberSignupReqDto;
 import com.example.zubzub.dto.MemberUpdateReqDto;
+import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.Member;
 import com.example.zubzub.repository.MemberRepository;
 import com.example.zubzub.security.JwtUtil;
