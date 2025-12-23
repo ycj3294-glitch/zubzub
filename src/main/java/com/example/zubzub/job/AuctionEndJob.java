@@ -24,6 +24,9 @@ public class AuctionEndJob implements Job {
         Long auctionId = context.getJobDetail().getJobDataMap().getLong("auctionId");
         Auction auction = auctionService.getAuctionById(auctionId);
 
+        // 낙찰 처리(여기 이미 경매종료로 변경하는 단계가 있음)
+        auctionService.finalizeAuction(auctionId);
+
         // 경매종료 상태로 설정
         auction.setAuctionStatus(AuctionStatus.COMPLETED);
 

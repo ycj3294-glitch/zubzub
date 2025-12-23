@@ -190,7 +190,11 @@ public class AuctionService {
         Member bidder = memberRepository.findById(bidderId)
                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
-        // 입찰 가능 여부 확인
+        // 입찰 가능 여부 확인 (경매 상태)
+        if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) {
+            throw new IllegalStateException("현재 경매는 입찰이 불가능한 상태입니다.");
+        }
+        // 입찰 가능 여부 확인(크레딧)
         if (bidder.getAvailableCredit() < bidAmount) {
             throw new IllegalArgumentException("크레딧이 부족합니다.");
         }
