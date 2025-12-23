@@ -21,6 +21,7 @@ import com.example.zubzub.service.MailService;
 
 import java.time.Duration;
 
+@CrossOrigin(origins = "http://localhost:3000") // 프론트 주소
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -236,6 +237,13 @@ public class MemberApiController {
         return ResponseEntity.ok(success);
     }
 
+    // 크레딧 충전
+    @PostMapping("/{id}/credit")
+    public ResponseEntity<Boolean> chargeCredit(@PathVariable Long id, @RequestParam int coin) {
+        log.info("충전요청 백엔드로 잘 날아옴");
+        boolean success = memberService.chargeCoin(id, coin);
+        return ResponseEntity.ok(success);
+    }
 
 
 

@@ -162,4 +162,13 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
     public List<MemberResDto> getAll() {
         return list(); // 이미 만들어둔 list()를 그대로 실행
     }
+
+    public boolean chargeCoin(Long id, int coin) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("회원 없음"));
+        member.setCredit(member.getCredit() + coin);
+        memberRepository.save(member);
+        return true;
+
+    }
 }
