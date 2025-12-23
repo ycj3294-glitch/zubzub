@@ -2,12 +2,10 @@ package com.example.zubzub.service;
 
 import com.example.zubzub.dto.AuctionCreateDto;
 import com.example.zubzub.dto.AuctionResDto;
-import com.example.zubzub.entity.Auction;
-import com.example.zubzub.entity.AuctionStatus;
-import com.example.zubzub.entity.AuctionType;
-import com.example.zubzub.entity.Member;
+import com.example.zubzub.entity.*;
 import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.repository.AuctionRepository;
+import com.example.zubzub.repository.BidHistoryRepository;
 import com.example.zubzub.repository.MemberRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +31,7 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final MemberRepository memberRepository;
     private final AuctionSchedulerService auctionSchedulerService;
+    private final BidHistoryRepository bidHistoryRepository;
     // 실시간성을 위한 캐시 사용
     private final ConcurrentHashMap<Long, Auction> cache = new ConcurrentHashMap<>();
 
@@ -180,5 +179,62 @@ public class AuctionService {
     public List<AuctionResDto> getMajorList(LocalDateTime start, LocalDateTime end) {
         List<Auction> auction = auctionRepository.findByAuctionTypeAndStartTimeBetween(AuctionType.MAJOR, start, end);
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
+    }
+
+    // 입찰 시퀸스
+    @Transactional
+    public void placeBid(Long auctionId, Long bidderId, int bidAmount) {
+
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("경매가 존재하지 않습니다."));
+        Member bidder = memberRepository.findById(bidderId)
+                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
+
+        // 입찰 가능 여부 확인
+        if (bidder.getAvailableCredit() < bidAmount) {
+            throw new IllegalArgumentException("크레딧이 부족합니다.");
+        }
+
+        // 이전 최고 입찰자 환불
+        Member prevBidder = auction.getWinner();
+        int prevPrice = auction.getFinalPrice() != 0 ? auction.getFinalPrice() : 0;
+
+        if (prevBidder != null && !prevBidder.equals(bidder)) {
+            prevBidder.unlockCredit(prevPrice);
+        }
+
+        // 현재 입찰자 크레딧 잠금
+        bidder.lockCredit(bidAmount);
+
+        // Auction 엔티티 업데이트
+        auction.setFinalPrice(bidAmount);
+        auction.setWinner(bidder);
+        auctionRepository.save(auction); // JPA 변경 감지로 생략 가능
+
+        // BidHistory 기록 저장
+        BidHistory bidHistory = BidHistory.builder()
+                .auction(auction)
+                .bidder(bidder)
+                .price(bidAmount)
+                .bidTime(LocalDateTime.now())
+                .build();
+        bidHistoryRepository.save(bidHistory);
+    }
+
+    // 최종 낙찰 시퀸스
+    @Transactional
+    public void finalizeAuction(Long auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("경매가 존재하지 않습니다."));
+
+        Member winner = auction.getWinner();
+        int winningBid = auction.getFinalPrice();
+
+        if (winner != null) {
+            winner.useLockedCredit(winningBid);
+        }
+
+        auction.setAuctionStatus(AuctionStatus.COMPLETED);
+        auctionRepository.save(auction);
     }
 }

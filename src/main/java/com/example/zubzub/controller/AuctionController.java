@@ -93,4 +93,5 @@ public class AuctionController {
         LocalDateTime end = start.plusDays(1).minusSeconds(1); // 시작시간 끝시간 지정(하루범위를 지정)
         return ResponseEntity.ok(auctionService.getMajorList(start, end));
     }
+    // 대규모 경매 캘린더용 월별로 보여주기
 }
