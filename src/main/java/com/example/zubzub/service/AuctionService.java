@@ -237,4 +237,12 @@ public class AuctionService {
         auction.setAuctionStatus(AuctionStatus.COMPLETED);
         auctionRepository.save(auction);
     }
+
+    // 관리자 대규모 경매 승인 목록 불러오기
+    public List<AuctionResDto> getPendingList() {
+        List<Auction> auction = auctionRepository.findByAuctionStatus(AuctionStatus.PENDING);
+        return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
+    }
+
+
 }

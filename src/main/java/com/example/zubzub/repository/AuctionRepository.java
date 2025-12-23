@@ -1,6 +1,7 @@
 package com.example.zubzub.repository;
 
 import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.entity.AuctionType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,4 +23,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     // AuctionType과 날짜로 조회
     List<Auction> findByAuctionTypeAndStartTimeBetween(AuctionType type, LocalDateTime start, LocalDateTime end);
+
+    // AuctionStatus로 조회
+    List<Auction> findByAuctionStatus(AuctionStatus status);
 }

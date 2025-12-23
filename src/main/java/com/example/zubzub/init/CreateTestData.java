@@ -44,6 +44,17 @@ public class CreateTestData implements CommandLineRunner {
         me.setMemberStatus("ACTIVE");
         memberRepository.save(me);
 
+        Member ad = new Member();
+        ad.setEmail("ycj3294@naver.com");
+        ad.setPwd(passwordEncoder.encode("aA1!23456"));
+        ad.setName("양찬종");
+        ad.setNickname("Y");
+        ad.setAddr("서울시");
+        ad.setCredit(random.nextInt(5000));
+        ad.setAdmin(true);
+        ad.setMemberStatus("ACTIVE");
+        memberRepository.save(ad);
+
         // ===============================
         // 1️⃣ 회원 10명 생성
         // ===============================

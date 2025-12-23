@@ -1,7 +1,9 @@
 package com.example.zubzub.controller;
 
+import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.AuctionTimeUpdateRequest;
 import com.example.zubzub.dto.MemberResDto;
+import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.service.AuctionService;
 import com.example.zubzub.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -9,10 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/members")
+@RequestMapping("/api/admin")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminMemberApiController {
@@ -70,4 +73,17 @@ public class AdminMemberApiController {
         auctionService.setTime(req.getId(), req.getStartTime(), req.getEndTime());
         return ResponseEntity.ok("시간이 배정되었습니다.");
     }
+
+    // 대규모 경매 승인대기 목록 가져오기
+    @GetMapping("/pending")
+    public ResponseEntity<List<AuctionResDto>> getPendingList() {
+        log.info("요청받음");
+        return ResponseEntity.ok(auctionService.getPendingList());
+    }
+
+//    // 대규모 경매 승인 및 일정 배정
+//    @PutMapping("/approve/{id}")
+//    public ResponseEntity<Boolean> approveAuction(@PathVariable Long id, @RequestBody LocalDateTime starttime) {
+//        return ResponseEntity.ok()
+//    }
 }
