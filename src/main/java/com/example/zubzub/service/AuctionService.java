@@ -116,12 +116,23 @@ public class AuctionService {
     }
 
 
-    // 마이페이지 판매 목록 리스트 조회(페이지네이션)
+    // 마이페이지 판매목록 5개 가져오기
+    public List<AuctionResDto> List5SellAuction(Long id) {
+        List<Auction> auction = auctionRepository.findTop5BySellerIdOrderByEndTimeDesc(id);
+        return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
+    }
+    // 마이페이지 낙찰목록 5개 가져오기
+    public List<AuctionResDto> List5WinAuction(Long id) {
+        List<Auction> auction = auctionRepository.findTop5ByWinnerIdAndAuctionStatusOrderByEndTimeDesc(id, AuctionStatus.COMPLETED);
+        return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
+    }
+
+    // 마이페이지 판매 목록 리스트 상세 조회 (페이지네이션)
     public Page<AuctionResDto> ListSellAuction(Long id, Pageable pageable) {
         Page<Auction> auction = auctionRepository.findBySellerId(id, pageable);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);
     }
-    // 마이페이지 낙찰 내역 리스트 조회(페이지네이션)
+    // 마이페이지 낙찰 내역 리스트 상세 조회(페이지네이션)
     public Page<AuctionResDto> ListWinnerAuction(Long id, Pageable pageable) {
         Page<Auction> auction = auctionRepository.findByWinnerId(id, pageable);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);

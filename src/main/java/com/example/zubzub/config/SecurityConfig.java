@@ -37,8 +37,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/members/login",
                                 "/api/members/signup",
                                 "/api/members/signup/verify").permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN") //어드민에게주는 권한
-                        .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/admin/**").permitAll() //어드민에게주는 권한
                         .requestMatchers("/api/messages/**").authenticated()
                         // 나머지 API는 모두 열기 (JWT 없이도 접근 가능)
                         .anyRequest().permitAll()

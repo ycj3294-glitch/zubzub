@@ -49,13 +49,26 @@ public class AuctionController {
         return ResponseEntity.ok().build();
     }
 
-    // 판매 내역 가져오기
+    // 판매내역 5개(최근순)
+    @GetMapping("/{id}/sell5")
+    public ResponseEntity<List<AuctionResDto>> getSell5(@PathVariable Long id) {
+        return ResponseEntity.ok(auctionService.List5SellAuction(id));
+    }
+    // 낙찰내역 5개(최근순)
+    @GetMapping("/{id}/win5")
+    public ResponseEntity<List<AuctionResDto>> getWin5(@PathVariable Long id) {
+        return ResponseEntity.ok(auctionService.List5WinAuction(id));
+    }
+
+
+
+    // 판매 내역 상세 가져오기
     @GetMapping("/{id}/selllist")
     public ResponseEntity<Page<AuctionResDto>> getSellList(@PathVariable Long id, @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(auctionService.ListSellAuction(id, pageable));
     }
-    // 낙찰 내역 가져오기
+    // 낙찰 내역 상세 가져오기
     @GetMapping("/{id}/winlist")
     public ResponseEntity<Page<AuctionResDto>> getWinnerList(@PathVariable Long id,@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
