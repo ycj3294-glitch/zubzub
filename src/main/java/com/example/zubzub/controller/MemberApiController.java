@@ -88,7 +88,7 @@ public class MemberApiController {
      */
     @PatchMapping("/{id}")
     public ResponseEntity<Boolean> updateMember(@PathVariable Long id, @RequestBody MemberUpdateReqDto req) {
-        log.info("[API] 회원 정보 수정 시도: id={}, nickname={}", id, req.getNickname());
+        log.info("[API] 회원 정보 수정 시도: id={}, nickname={}, profileImg={}", id, req.getNickname(), req.getProfileImg());
 
         // 서비스의 update 메서드 호출 (id와 req 순서 주의!)
         boolean success = memberService.update(req, id);

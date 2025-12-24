@@ -128,6 +128,10 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
             member.setPwd(passwordEncoder.encode(req.getPwd()));
         }
 
+        // 5. 프로필 이미지 수정(수정이 들어왔다면)
+        if (req.getProfileImg() != null && !req.getProfileImg().isEmpty()) {
+            member.setProfileImg(req.getProfileImg());
+        }
         // Dirty Checking으로 인해 별도의 save 호출 없이도 트랜잭션 종료 시 DB에 반영됩니다.
         return true;
     }
