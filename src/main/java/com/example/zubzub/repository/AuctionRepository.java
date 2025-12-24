@@ -28,4 +28,6 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
 
     // AuctionStatus로 조회
     List<Auction> findByAuctionStatus(AuctionStatus status);
+
+
 }

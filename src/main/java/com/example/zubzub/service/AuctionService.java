@@ -119,11 +119,13 @@ public class AuctionService {
     // 마이페이지 판매목록 5개 가져오기
     public List<AuctionResDto> List5SellAuction(Long id) {
         List<Auction> auction = auctionRepository.findTop5BySellerIdOrderByEndTimeDesc(id);
+        log.info("DB 조회 결과: {}", auction);
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
     // 마이페이지 낙찰목록 5개 가져오기
     public List<AuctionResDto> List5WinAuction(Long id) {
         List<Auction> auction = auctionRepository.findTop5ByWinnerIdAndAuctionStatusOrderByEndTimeDesc(id, AuctionStatus.COMPLETED);
+        log.info("DB 조회 결과2: {}", auction);
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
 

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 
@@ -52,11 +53,13 @@ public class AuctionController {
     // 판매내역 5개(최근순)
     @GetMapping("/{id}/sell5")
     public ResponseEntity<List<AuctionResDto>> getSell5(@PathVariable Long id) {
+        log.info("판매5개 요청 옴");
         return ResponseEntity.ok(auctionService.List5SellAuction(id));
     }
     // 낙찰내역 5개(최근순)
     @GetMapping("/{id}/win5")
     public ResponseEntity<List<AuctionResDto>> getWin5(@PathVariable Long id) {
+        log.info("낙찰5개 요청 옴");
         return ResponseEntity.ok(auctionService.List5WinAuction(id));
     }
 
@@ -105,4 +108,11 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getMajorList(start, end));
     }
     // 대규모 경매 캘린더용 월별로 보여주기
+    @GetMapping("/majorlist/by-month")
+    public ResponseEntity<List<AuctionResDto>> getMajorListMonth(@RequestParam String month) {
+        YearMonth yearMonth = YearMonth.parse(month);
+        LocalDateTime start = yearMonth.atDay(1).atStartOfDay(); // 12월 1일 00:00
+        LocalDateTime end = yearMonth.atEndOfMonth().atTime(23, 59, 59); // 12월 마지막 날 23:59:59
+        return ResponseEntity.ok(auctionService.getMajorList(start, end));
+    }
 }
