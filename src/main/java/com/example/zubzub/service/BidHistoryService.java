@@ -1,14 +1,11 @@
 package com.example.zubzub.service;
 
-import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.dto.BidHistoryResDto;
-import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.BidHistory;
 import com.example.zubzub.mapper.BidHistoryMapper;
 import com.example.zubzub.repository.BidHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;

@@ -64,6 +64,7 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
        ========================= */
     public MemberResDto login(String email, String rawPwd) {
         Member member = memberRepository.findByEmail(email);
+
         if (member == null || !"ACTIVE".equals(member.getMemberStatus())) return null;
         if (!passwordEncoder.matches(rawPwd, member.getPwd())) return null;
         return new MemberResDto(member);

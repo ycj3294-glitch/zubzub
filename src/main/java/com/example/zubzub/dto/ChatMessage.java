@@ -2,8 +2,6 @@ package com.example.zubzub.dto;
 
 import lombok.*;
 
-import java.awt.*;
-
 @Getter
 @Setter
 @ToString

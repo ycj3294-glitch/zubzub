@@ -1,6 +1,5 @@
 package com.example.zubzub.controller;
 
-import com.example.zubzub.dto.VerifyMailDto;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 import lombok.RequiredArgsConstructor;
@@ -8,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Slf4j
