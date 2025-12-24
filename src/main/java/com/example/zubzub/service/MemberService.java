@@ -152,11 +152,27 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
     @Transactional
     public boolean resetPassword(String email, String code, String newPassword) {
         String savedCode = pendingPasswordResets.get(email);
-        if (savedCode == null || !savedCode.equals(code)) return false;
+
+        // 🔍 로그 추가: 코드가 왜 안 맞는지 눈으로 확인
+        log.info("[비번재설정] 입력코드: {}, 저장된코드: {}", code, savedCode);
+
+        if (savedCode == null || !savedCode.equals(code)) {
+            log.error("❌ 인증번호 불일치로 실패!");
+            return false;
+        }
 
         Member member = memberRepository.findByEmail(email);
+        if (member == null) {
+            log.error("❌ 유저를 찾을 수 없음: {}", email);
+            return false;
+        }
+
+        // ✅ 암호화 저장
         member.setPwd(passwordEncoder.encode(newPassword));
-        pendingPasswordResets.remove(email);
+        memberRepository.save(member); // 명시적으로 저장 명령 내리기
+
+//        pendingPasswordResets.remove(email);
+        log.info("✅ 비밀번호 변경 성공! 이제 로그인 해보세요.");
         return true;
     }
     public List<MemberResDto> getAll() {
