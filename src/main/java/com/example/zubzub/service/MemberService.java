@@ -205,4 +205,18 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
         return true;
 
     }
+    public List<MemberResDto> getAllMemberList() {
+        List<Member> members = memberRepository.findAll();
+        return members.stream()
+                .map(member -> {
+                    MemberResDto dto = new MemberResDto();
+                    dto.setId(member.getId());
+                    dto.setEmail(member.getEmail());
+                    dto.setNickname(member.getNickname());
+                    // 만약 엔티티에 status 필드가 있다면 m.setStatus(member.getStatus());
+                    // 없다면 기본값 "정상"
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
 }

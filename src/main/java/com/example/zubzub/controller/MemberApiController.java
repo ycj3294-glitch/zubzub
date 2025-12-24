@@ -14,12 +14,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import com.example.zubzub.security.JwtUtil;
 import com.example.zubzub.service.MailService;
 
 import java.time.Duration;
+import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000",
         allowCredentials = "true",
@@ -258,6 +260,17 @@ public class MemberApiController {
         log.info("충전요청 백엔드로 잘 날아옴");
         boolean success = memberService.chargeCoin(id, coin);
         return ResponseEntity.ok(success);
+    }
+
+    /**
+     * 관리자용 전체 회원 목록 조회
+     */
+    @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMIN')") // 관리자만 접근 가능하도록 설정
+    public ResponseEntity<List<MemberResDto>> getAllMembers() {
+        List<MemberResDto> list = memberService.getAllMemberList(); // 서비스에 만들 메서드
+        log.info("[API] 관리자 전체 회원 조회: {}명", list.size());
+        return ResponseEntity.ok(list);
     }
 
 

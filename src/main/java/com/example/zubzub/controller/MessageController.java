@@ -88,4 +88,10 @@ public class MessageController {
         messageService.deleteMessage(id, customUserDetails.getId());
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
+    @PostMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> sendToAll(@RequestBody MessageCreateDto dto) {
+        messageService.createToAll(dto);
+        return ResponseEntity.ok().build();
+    }
 }
