@@ -1,8 +1,6 @@
 package com.example.zubzub.dto;
 
-import com.example.zubzub.entity.AuctionStatus;
 import com.example.zubzub.entity.AuctionType;
-import jakarta.persistence.Column;
 import lombok.*;
 
 import java.time.LocalDateTime;

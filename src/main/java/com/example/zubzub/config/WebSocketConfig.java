@@ -1,6 +1,5 @@
 package com.example.zubzub.config;
 
-import com.example.zubzub.security.JwtHandshakeInterceptor;
 import com.example.zubzub.security.StompPrincipalHandshakeHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

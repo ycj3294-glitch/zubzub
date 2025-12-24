@@ -1,7 +1,5 @@
 package com.example.zubzub.mapper;
 
-import com.example.zubzub.dto.AuctionCreateDto;
-import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.dto.BidHistoryResDto;
 import com.example.zubzub.entity.Auction;

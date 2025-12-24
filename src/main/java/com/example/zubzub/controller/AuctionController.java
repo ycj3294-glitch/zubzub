@@ -3,7 +3,6 @@ package com.example.zubzub.controller;
 import com.example.zubzub.dto.AuctionCreateDto;
 import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.dto.BidHistoryCreateDto;
-import com.example.zubzub.entity.Auction;
 import com.example.zubzub.service.AuctionBidService;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@CrossOrigin(origins = {"http://192.168.0.93:3000", "http://localhost:3000"}) // 동일 출처 에러 방지용
 @RequestMapping("/api/auctions")
 @RequiredArgsConstructor
 public class AuctionController {
