@@ -107,11 +107,28 @@ public class MemberService { // 인터페이스 없이 바로 서비스 클래�
        ========================= */
     @Transactional
     public boolean update(MemberUpdateReqDto req, Long id) {
-        Member member = memberRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("회원 없음"));
+        // 1. 회원 존재 여부 확인
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("회원 없음"));
 
-        // Dirty Checking 활용 (필요한 값만 셋팅)
-        if (req.getNickname() != null) member.setNickname(req.getNickname());
-        if (req.getName() != null) member.setName(req.getName());
+        // 2. 닉네임 수정 (값이 들어왔을 때만)
+        if (req.getNickname() != null && !req.getNickname().isEmpty()) {
+            member.setNickname(req.getNickname());
+        }
+
+        // 3. 이름 수정 (필요하다면)
+        if (req.getName() != null && !req.getName().isEmpty()) {
+            member.setName(req.getName());
+        }
+
+        // 4. 비밀번호 수정 (중요!)
+        // 프론트에서 'pwd'라는 이름으로 보낸다면 DTO에도 pwd가 있어야 합니다.
+        if (req.getPwd() != null && !req.getPwd().isEmpty()) {
+            // 암호화해서 저장 (인코딩 필수)
+            member.setPwd(passwordEncoder.encode(req.getPwd()));
+        }
+
+        // Dirty Checking으로 인해 별도의 save 호출 없이도 트랜잭션 종료 시 DB에 반영됩니다.
         return true;
     }
 

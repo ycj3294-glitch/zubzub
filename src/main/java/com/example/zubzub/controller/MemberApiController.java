@@ -21,7 +21,10 @@ import com.example.zubzub.service.MailService;
 
 import java.time.Duration;
 
-@CrossOrigin(origins = "http://localhost:3000") // 프론트 주소
+@CrossOrigin(origins = "http://localhost:3000",
+        allowCredentials = "true",
+        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+        allowedHeaders = "*") // 프론트 주소
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
@@ -77,6 +80,18 @@ public class MemberApiController {
         log.info("[API] 비밀번호 검증: memberId={} / result={}", id, match);
 
         return ResponseEntity.ok(match);
+    }
+    /**
+     * 회원 정보 수정 엔드포인트
+     */
+    @PatchMapping("/{id}")
+    public ResponseEntity<Boolean> updateMember(@PathVariable Long id, @RequestBody MemberUpdateReqDto req) {
+        log.info("[API] 회원 정보 수정 시도: id={}, nickname={}", id, req.getNickname());
+
+        // 서비스의 update 메서드 호출 (id와 req 순서 주의!)
+        boolean success = memberService.update(req, id);
+
+        return ResponseEntity.ok(success);
     }
 
     /**
