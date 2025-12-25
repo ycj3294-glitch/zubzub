@@ -17,6 +17,8 @@ public class AuctionResDto {
 
     private Long sellerId;
 
+    private String sellerNickName;
+
     private String itemName;
 
     private String itemDesc;
@@ -38,4 +40,6 @@ public class AuctionResDto {
     private LocalDateTime extendedEndTime;
 
     private Long winnerId;
+
+    private String winnerNickName;
 }

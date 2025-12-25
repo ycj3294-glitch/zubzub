@@ -29,6 +29,7 @@ public class AuctionMapper {
                 .auctionType(auction.getAuctionType())
                 .category(auction.getCategory())
                 .sellerId(auction.getSeller() != null ? auction.getSeller().getId() : null)
+                .sellerNickName(auction.getSeller() != null ? auction.getSeller().getNickname() : null)
                 .itemName(auction.getItemName())
                 .itemDesc(auction.getItemDesc())
                 .startPrice(auction.getStartPrice())
@@ -39,6 +40,7 @@ public class AuctionMapper {
                 .minBidUnit(auction.getMinBidUnit())
                 .extendedEndTime(auction.getExtendedEndTime())
                 .winnerId(auction.getWinner() != null ? auction.getWinner().getId() : null)
+                .winnerNickName(auction.getWinner() != null ? auction.getWinner().getNickname() : null)
                 .build();
     }
 }
