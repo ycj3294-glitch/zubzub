@@ -1,8 +1,10 @@
 package com.example.zubzub.service;
 
+import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.dto.AuctionCreateDto;
 import com.example.zubzub.dto.AuctionResDto;
 import com.example.zubzub.entity.*;
+import com.example.zubzub.event.AuctionCreatedEvent;
 import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.repository.AuctionRepository;
 import com.example.zubzub.repository.BidHistoryRepository;
@@ -10,6 +12,7 @@ import com.example.zubzub.repository.MemberRepository;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.SchedulerException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,11 +32,15 @@ public class AuctionService {
     private final MemberRepository memberRepository;
     private final AuctionSchedulerService auctionSchedulerService;
     private final BidHistoryRepository bidHistoryRepository;
+    private final Broadcaster broadcaster;
+    private final ApplicationEventPublisher eventPublisher;
+
     // 실시간성을 위한 캐시 사용
     private final ConcurrentHashMap<Long, Auction> cache = new ConcurrentHashMap<>();
 
     // CREATE
-    public Boolean createAuction(AuctionCreateDto dto) {
+    @Transactional
+    public AuctionResDto createAuction(AuctionCreateDto dto) throws SchedulerException {
         Member seller = memberRepository.findById(dto.getSellerId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
@@ -42,8 +49,10 @@ public class AuctionService {
         if (auction.getAuctionType() == AuctionType.MAJOR) {
             auction.setStartTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
             auction.setEndTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
-
         }
+
+        if (auction.getEndTime().isBefore(auction.getStartTime()))
+            throw new IllegalArgumentException("시작 시간이 종료 시간 이후입니다.");
 
         if (auction.getAuctionType() == AuctionType.MAJOR) {
             // 경매생성시 자동으로 승인대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
@@ -52,21 +61,17 @@ public class AuctionService {
             // 경매생성시 자동으로 경매대기 상태로 설정 (DB에서 넣어줘도 될 듯함)
             auction.setAuctionStatus(AuctionStatus.READY);
         }
+
         // DB에 넣어서 ID 자동 채우기
         Auction savedAuction = auctionRepository.save(auction);
+        log.info("경매 생성됨 : {}", auction.getId());
 
         if (savedAuction.getAuctionType() == AuctionType.MINOR) {
-            try {
-                // 시작 종료 타이머 걸기
-                auctionSchedulerService.scheduleAuctionStart(savedAuction);
-                auctionSchedulerService.scheduleAuctionEnd(savedAuction);
-            } catch (SchedulerException e) {
-                log.error("타이머 지정 실패 : {}", e.getMessage());
-                auctionRepository.deleteById(savedAuction.getId());
-                return false;
-            }
+            eventPublisher.publishEvent(new AuctionCreatedEvent(savedAuction));
+            log.info("경매 생성 이벤트 발행 : {}", savedAuction.getId());
         }
-        return true;
+
+        return AuctionMapper.convertEntityToAuctionDto(savedAuction);
     }
 
     // READ (전체 조회)
@@ -77,44 +82,104 @@ public class AuctionService {
     }
 
     // READ (단건 조회)
-    public Auction getAuctionById(Long id) {
-        // 캐시에서 먼저 찾고, 없으면 DB에서 조회 후 캐시에 넣어줌
-        Auction auction = cache.get(id);
+    public AuctionResDto getAuction(Long auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("Auction not found: " + auctionId));
+        return AuctionMapper.convertEntityToAuctionDto(auction);
+    }
+
+    // cache READ
+    @Transactional(readOnly = true)
+    public Auction getAuctionEntity(Long auctionId) {
+        // 캐시에서 먼저 찾기
+        log.info("캐시에서 찾기 : {}", auctionId);
+        Auction auction = cache.get(auctionId);
         if (auction == null) {
-            try {
-                auction = auctionRepository.findById(id).orElseThrow(() -> new RuntimeException("Auction not found"));
-            } catch (RuntimeException e){
-                log.info("auction 조회 오류 : {}", e.getMessage());
-                return null;
-            }
-            cache.put(id, auction);
+            // DB 조회 (없으면 예외 던짐)
+            log.info("DB에서 찾기 : {}", auctionId);
+            auction = auctionRepository.findById(auctionId)
+                    .orElseThrow(() -> new IllegalArgumentException("Auction not found: " + auctionId));
+            // 캐시에 저장
+            cache.put(auctionId, auction);
         }
         return auction;
     }
 
-    public AuctionResDto getAuctionDtoById(Long id) {
-        Auction auction = getAuctionById(id);
-        if (auction != null) return AuctionMapper.convertEntityToAuctionDto(auction);
-        else return null;
-    }
-
     // cache UPDATE
-    public Boolean updateAuction(Auction auction) {
+    public void updateAuction(Auction auction) {
         cache.put(auction.getId(), auction);
-        return true;
-    }
 
-    // DB UPDATE
-    public Auction endAuction(Long id) {
-        Auction auction = cache.get(id);
-        return auctionRepository.save(auction);
     }
 
     // DELETE
-    public void deleteAuction(Long id) {
-        auctionRepository.deleteById(id);
+    @Transactional
+    public void deleteAuction(Long auctionId) {
+        auctionRepository.deleteById(auctionId);
+        cache.remove(auctionId);
     }
 
+    // 경매시작
+    @Transactional
+    public void startAuction(Long auctionId) {
+
+        Auction auction = getAuctionEntity(auctionId);
+
+        log.info("옥션 : {}", auction);
+
+        // 최종가를 시작가로 초기화
+        auction.setFinalPrice(auction.getStartPrice());
+
+        // 경매중 상태로 설정
+        auction.setAuctionStatus(AuctionStatus.ACTIVE);
+
+        // 캐시에 업데이트
+        updateAuction(auction);
+
+        // 브로드캐스트
+        broadcaster.broadcastAuction(auction);
+
+        System.out.println("Auction " + auctionId + " 시작 처리 실행!");
+
+        try {
+            // 종료 타이머 걸기
+            auctionSchedulerService.scheduleAuctionEnd(auction);
+        } catch (SchedulerException e) {
+            log.error("종료 타이머 지정 실패 : {}", e.getMessage());
+            auction.setAuctionStatus(AuctionStatus.READY);
+        }
+    }
+
+    // 경매종료
+    @Transactional
+    public void endAuction(Long auctionId) {
+
+        // 경매 불러오기
+        Auction auction = getAuctionEntity(auctionId);
+
+        // 낙찰 처리
+        Member winner = auction.getWinner();
+        int winningBid = auction.getFinalPrice();
+
+        if (winner != null) {
+            winner.useLockedCredit(winningBid);
+        }
+
+        // 소규모경매시 입찰기록확인하여 이전입찰자들환불
+
+        // 경매종료 상태로 설정
+        auction.setAuctionStatus(AuctionStatus.COMPLETED);
+
+        // 캐시에 업데이트
+        updateAuction(auction);
+
+        // 브로드캐스트
+        broadcaster.broadcastAuction(auction);
+
+        // DB에 업데이트
+        Auction savedAuction = auctionRepository.save(auction);
+
+        System.out.println("Auction " + auctionId + " 종료 처리 실행!");
+    }
 
     // 마이페이지 판매목록 5개 가져오기
     public List<AuctionResDto> List5SellAuction(Long id) {
@@ -151,17 +216,31 @@ public class AuctionService {
 
         auction.setAuctionStatus(AuctionStatus.READY);
     }
+
     // 시작 시간, 종료시간 선정
     @Transactional
     public void setTime(Long id, LocalDateTime startTime, LocalDateTime endTime) {
+
         Auction auction = auctionRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("해당 경매는 없습니다."));
+
+        if (auction.getAuctionStatus() == AuctionStatus.ACTIVE)
+            throw new IllegalStateException("경매중에는 수정할 수 없습니다.");
+
         if (startTime.isAfter(endTime)) {
             throw new IllegalStateException("시작 시간이 종료 시간보다 늦을 수 없습니다.");
         }
+
         auction.setStartTime(startTime);
         auction.setEndTime(endTime);
+
+        Auction savedAuction = auctionRepository.save(auction);
+        log.info("시작 / 종료시간 재설정 됨 : {}", savedAuction);
+
+        eventPublisher.publishEvent(new AuctionCreatedEvent(savedAuction));
+        log.info("경매 생성 이벤트 발행 : {}", savedAuction.getId());
     }
+
     // 일반 경매 수정
     @Transactional
     public void updateNormalAuction(Long auctionId, AuctionCreateDto req) {

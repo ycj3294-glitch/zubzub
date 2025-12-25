@@ -2,7 +2,6 @@ package com.example.zubzub.controller;
 
 import com.example.zubzub.dto.MessageCreateDto;
 import com.example.zubzub.dto.MessageResDto;
-import com.example.zubzub.entity.Member;
 import com.example.zubzub.security.CustomUserDetails;
 import com.example.zubzub.service.MessageService;
 import lombok.RequiredArgsConstructor;

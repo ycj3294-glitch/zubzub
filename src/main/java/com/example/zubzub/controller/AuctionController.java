@@ -7,6 +7,7 @@ import com.example.zubzub.service.AuctionBidService;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.SchedulerException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,15 +33,19 @@ public class AuctionController {
     // 경매 하나 보기
     @GetMapping("/{id}")
     public ResponseEntity<AuctionResDto> getAuction(@PathVariable Long id) {
-        return ResponseEntity.ok(auctionService.getAuctionDtoById(id));
+        return ResponseEntity.ok(auctionService.getAuction(id));
     }
 
     // 경매 생성
     @PostMapping()
     public ResponseEntity<Void> createAuction(@RequestBody AuctionCreateDto dto) {
-        auctionService.createAuction(dto);
-        System.out.println("DF");
-        return ResponseEntity.ok().build();
+        try {
+            // 시작 타이머 걸기
+            auctionService.createAuction(dto);
+            return ResponseEntity.ok().build();
+        } catch (SchedulerException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // 경매에 입찰하기
@@ -63,7 +68,14 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.List5WinAuction(id));
     }
 
-
+    // 시간 설정
+    @PostMapping("/{id}/time")
+    public ResponseEntity<Void> setTime(@PathVariable Long id,
+                        @RequestParam LocalDateTime startTime,
+                        @RequestParam LocalDateTime endTime) {
+        auctionService.setTime(id, startTime, endTime);
+        return ResponseEntity.ok().build();
+    }
 
     // 판매 내역 상세 가져오기
     @GetMapping("/{id}/selllist")

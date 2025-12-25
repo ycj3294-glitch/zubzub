@@ -28,17 +28,25 @@ public class AuctionBidService {
     public synchronized boolean placeBid(Long auctionId, BidHistoryCreateDto dto) {
 
         // 입찰 대상 경매 불러오기
-        Auction auction = auctionService.getAuctionById(auctionId);
+        Auction auction = auctionService.getAuctionEntity(auctionId);
         Member bidder = memberRepository.findById(dto.getBidderId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         BidHistory bidHistory = BidHistoryMapper.convertBidHistoryDtoToEntity(dto, auction, bidder);
         bidHistory.setBidTime(LocalDateTime.now());
 
-        // 경매중 상태가 아니면 입찰 false
-        if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) return false;
+        // 입찰 가능 여부 확인 (경매 상태)
+        if (auction.getAuctionStatus() != AuctionStatus.ACTIVE) {
+            throw new IllegalStateException("현재 경매는 입찰이 불가능한 상태입니다.");
+        }
+
+        // 입찰 가능 여부 확인(크레딧)
+        if (bidder.getAvailableCredit() < dto.getPrice()) {
+            throw new IllegalArgumentException("크레딧이 부족합니다.");
+        }
 
         // 메이저 경매의 경우
         if (auction.getAuctionType() == AuctionType.MAJOR) {
+
             // 입찰가가 기존입찰가보다 높지 않으면 입찰 false
             if (bidHistory.getPrice() <= auction.getFinalPrice()) return false;
 
@@ -63,6 +71,17 @@ public class AuctionBidService {
                 }
             }
 
+            // 이전 최고 입찰자 환불
+            Member prevBidder = auction.getWinner();
+            int prevPrice = auction.getFinalPrice() != 0 ? auction.getFinalPrice() : 0;
+
+            if (prevBidder != null && !prevBidder.equals(bidder)) {
+                prevBidder.unlockCredit(prevPrice);
+            }
+
+            // 현재 입찰자 크레딧 잠금
+            bidder.lockCredit(dto.getPrice());
+
             // 입찰금액, 입찰자 지정
             auction.setFinalPrice(bidHistory.getPrice());
             auction.setWinner(bidHistory.getBidder());
@@ -79,6 +98,9 @@ public class AuctionBidService {
         // 마이너 경매의 경우
         else if (auction.getAuctionType() == AuctionType.MINOR) {
             if (bidHistory.getPrice() > auction.getFinalPrice()) {
+
+                // 현재 입찰자 크레딧 잠금
+                bidder.lockCredit(dto.getPrice());
 
                 // 입찰금액, 입찰자 지정
                 auction.setFinalPrice(bidHistory.getPrice());

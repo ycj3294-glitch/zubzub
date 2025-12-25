@@ -9,8 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.test.context.TestPropertySource;
 
-import javax.xml.stream.Location;
-
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional

@@ -26,6 +26,7 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final MemberRepository memberRepository;
 
+    @Transactional
     public void create(MessageCreateDto dto) {
         Member receiver = memberRepository.findById(dto.getReceiverId())
                 .orElseThrow(() -> new NoSuchElementException("받는 사람을 찾을 수 없습니다"));
@@ -34,17 +35,20 @@ public class MessageService {
         messageRepository.save(message);
     }
 
+    @Transactional(readOnly = true)
     public Page<MessageResDto> getReceivedMessages(Long id, Pageable pageable) {
         Page<Message> messages = messageRepository.findByReceiverId(id, pageable);
         return messages.map(MessageMapper::convertEntityToMessageDto);
     }
 
+    @Transactional(readOnly = true)
     public MessageResDto getMessage(Long id, Long receiverId) {
         Message message =  messageRepository.findByIdAndReceiverId(id, receiverId)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
         return MessageMapper.convertEntityToMessageDto(message);
     }
 
+    @Transactional
     public void readMessage(Long id, Long receiverId) {
         Message message =  messageRepository.findByIdAndReceiverId(id, receiverId)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
@@ -52,6 +56,7 @@ public class MessageService {
         messageRepository.save(message);
     }
 
+    @Transactional
     public void deleteMessage(Long id, Long receiverId) {
         Message message = messageRepository.findByIdAndReceiverId(id, receiverId)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
