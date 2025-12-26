@@ -87,16 +87,24 @@ public class CreateTestData implements CommandLineRunner {
 
         LocalDateTime today = LocalDateTime.now();
 
-        // 🔹 하루에 프리미엄 5개씩, 앞뒤로 14일치 생성
-        for (int d = 0; d < 14; d++) {
-            LocalDateTime dayStart = today.minusDays(d-7);
-            LocalDateTime dayEnd = dayStart.withHour(23).withMinute(59).withSecond(59); // 그 날 끝
+        // 🔹 하루에 프리미엄 3개씩, 5일치 생성
+        for (int d = 0; d < 5; d++) {
 
-            for (int i = 1; i <= 5; i++) {
-                // 시작 시간은 dayStart ~ dayEnd-2h 범위에서 랜덤
-                long maxStartHour = Math.max(0, dayEnd.getHour() - 2); // 종료시간이 그 날을 넘지 않도록
-                LocalDateTime startTime = dayStart.plusHours(random.nextInt((int) maxStartHour + 1));
-                LocalDateTime endTime = startTime.plusHours(2); // 종료시간은 항상 2시간 차이
+            // 해당 날짜의 시작 (00:00:00)
+            LocalDateTime dayStart = today.minusDays(d)
+                    .withHour(0).withMinute(0).withSecond(0);
+
+            // 해당 날짜의 끝 (23:59:59)
+            LocalDateTime dayEnd = dayStart
+                    .withHour(23).withMinute(59).withSecond(59);
+
+            for (int i = 1; i <= 3; i++) {
+
+                // startTime은 0시 ~ 21시 사이 (2시간 경매 보장)
+                int startHour = random.nextInt(22); // 0~21
+                LocalDateTime startTime = dayStart.plusHours(startHour);
+
+                LocalDateTime endTime = startTime.plusHours(2); // 항상 같은 날 안
 
                 AuctionCreateDto dto = AuctionCreateDto.builder()
                         .auctionType(AuctionType.MAJOR)
@@ -106,24 +114,27 @@ public class CreateTestData implements CommandLineRunner {
                         .itemDesc("설명 " + i)
                         .startPrice(10000 + random.nextInt(99000))
                         .minBidUnit(100)
-                        .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
+                        .itemImg("http://placehold.co/600x400")
                         .startTime(startTime)
                         .endTime(endTime)
                         .build();
 
                 AuctionResDto resDto = auctionService.createAuction(dto);
-
                 auctionService.approveAuction(resDto.getId());
-
                 auctionService.setTime(resDto.getId(), startTime, endTime);
 
                 auctionCount++;
             }
         }
 
-        // 🔹 일반 경매 150개 랜덤 생성
-        for (int i = 1; i <= 150; i++) {
-            LocalDateTime randomDay = today.minusDays(random.nextInt(1));
+        // 🔹 일반 경매 15개 랜덤 생성
+        for (int i = 1; i <= 15; i++) {
+
+            LocalDateTime baseDay = today.minusDays(random.nextInt(5))
+                    .withHour(0).withMinute(0).withSecond(0);
+
+            LocalDateTime startTime = baseDay.plusHours(random.nextInt(24));
+            LocalDateTime endTime = startTime.plusHours(1 + random.nextInt(72)); // 최소 1시간
 
             AuctionCreateDto dto = AuctionCreateDto.builder()
                     .auctionType(AuctionType.MINOR)

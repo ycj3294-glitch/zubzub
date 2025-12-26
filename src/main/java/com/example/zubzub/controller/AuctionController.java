@@ -143,4 +143,12 @@ public class AuctionController {
         return auctionService.search(keyword, pageable);
     }
 
+    // 해당 월 경매 리스트 받아오기
+    @GetMapping("/monthlist")
+    public ResponseEntity<List<AuctionResDto>> getMajorListMonth() {
+        LocalDate today = LocalDate.now();
+        int year = today.getYear();
+        int month = today.getMonthValue();
+        return ResponseEntity.ok(auctionService.getMajorAuctionsForCalendar(year, month));
+    }
 }

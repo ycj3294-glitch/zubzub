@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Builder
 public class BidHistoryResDto {
     private Long id;
+    private Long auctionId;
+    private Long bidderId;
     private String bidderNickname;
     private int price;
     private LocalDateTime bidTime;
