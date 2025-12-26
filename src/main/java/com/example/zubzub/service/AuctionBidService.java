@@ -98,22 +98,13 @@ public class AuctionBidService {
             log.info("Broadcasted auction {}", auction.getId());
         }
 
-        // 마이너 경매의 경우
+        // 마이너 경매(블라인드) 처리
         else if (auction.getAuctionType() == AuctionType.MINOR) {
-            if (bidHistory.getPrice() > auction.getFinalPrice()) {
+            // 현재 입찰자 크레딧 잠금
+            bidder.lockCredit(dto.getPrice());
 
-                // 현재 입찰자 크레딧 잠금
-                bidder.lockCredit(dto.getPrice());
-
-                // 입찰금액, 입찰자 지정
-                auction.setFinalPrice(bidHistory.getPrice());
-                auction.setWinner(bidHistory.getBidder());
-                auction.setBidCount(auction.getBidCount() + 1);
-
-                // 캐시에 경매 정보 업데이트
-                auctionService.updateAuction(auction);
-                log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
-            }
+            // 입찰 기록만 남기고, 경매 금액/승자는 나중에 종료 시점에 처리
+            log.info("블라인드 입찰 기록만 저장: {}", bidHistory);
         }
 
         // 크레딧차감 저장

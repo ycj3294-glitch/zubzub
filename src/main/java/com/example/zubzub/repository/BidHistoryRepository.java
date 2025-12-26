@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface BidHistoryRepository extends JpaRepository<BidHistory, Long> {
     Page<BidHistory> findByAuctionId(Long auctionId, Pageable pageable);
+    // 일반경매 최고 입찰자 조회
+    BidHistory findTopByAuctionIdOrderByPriceDescBidTimeAsc(Long auctionId);
 }

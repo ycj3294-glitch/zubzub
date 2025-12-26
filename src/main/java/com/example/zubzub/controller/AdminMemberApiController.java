@@ -68,7 +68,8 @@ public class AdminMemberApiController {
     public ResponseEntity<String> setTime(@RequestBody AuctionTimeUpdateRequest req) {
         Long auctionId = req.getId();
         LocalDateTime start = req.getStartTime();
-        LocalDateTime end = start.plusHours(2);
+        LocalDateTime end = start.plusMinutes(2); // 2분 후 종료
+//        LocalDateTime end = start.plusHours(2);
         if(!end.toLocalDate().isEqual(start.toLocalDate())) {
             end =start.toLocalDate().atTime(23, 59);
         }

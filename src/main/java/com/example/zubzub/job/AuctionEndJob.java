@@ -1,5 +1,7 @@
 package com.example.zubzub.job;
 
+import com.example.zubzub.entity.Auction;
+import com.example.zubzub.entity.AuctionType;
 import com.example.zubzub.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import org.quartz.Job;
@@ -15,8 +17,13 @@ public class AuctionEndJob implements Job {
     // 경매종료시 실행할 로직
     @Override
     public void execute(JobExecutionContext context) {
-
         Long auctionId = context.getJobDetail().getJobDataMap().getLong("auctionId");
-        auctionService.endAuction(auctionId);
+        Auction auction = auctionService.getAuctionEntity(auctionId);
+
+        if (auction.getAuctionType() == AuctionType.MAJOR) {
+            auctionService.endAuction(auctionId);
+        } else if (auction.getAuctionType() == AuctionType.MINOR) {
+            auctionService.endMinorAuction(auctionId);
+        }
     }
 }

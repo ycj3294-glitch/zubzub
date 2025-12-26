@@ -7,6 +7,7 @@ import com.example.zubzub.entity.Message;
 import com.example.zubzub.mapper.MessageMapper;
 import com.example.zubzub.repository.MemberRepository;
 import com.example.zubzub.repository.MessageRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

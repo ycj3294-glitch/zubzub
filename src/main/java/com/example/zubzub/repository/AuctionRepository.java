@@ -32,7 +32,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     Page<Auction> findByWinnerId(Long id, Pageable pageable);
     // AuctionType으로 조회(페이지네이션)
     @EntityGraph(attributePaths = {"seller", "winner"})
-    Page<Auction> findByAuctionType(AuctionType type, Pageable pageable);
+    Page<Auction> findByAuctionTypeAndAuctionStatus(AuctionType type, Pageable pageable, AuctionStatus status);
     // 마이페이지 판매목록 5개 가져오기(판매자 id)
     @EntityGraph(attributePaths = {"seller", "winner"})
     List<Auction> findTop5BySellerIdOrderByEndTimeDesc(Long sellerId);

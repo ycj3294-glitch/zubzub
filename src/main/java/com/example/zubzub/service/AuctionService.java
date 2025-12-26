@@ -150,7 +150,7 @@ public class AuctionService {
         }
     }
 
-    // 경매종료
+    // 경매종료(대규모에 적합)
     @Transactional
     public void endAuction(Long auctionId) {
 
@@ -164,8 +164,6 @@ public class AuctionService {
         if (winner != null) {
             winner.useLockedCredit(winningBid);
         }
-
-        // 소규모경매시 입찰기록확인하여 이전입찰자들환불
 
         // 경매종료 상태로 설정
         auction.setAuctionStatus(AuctionStatus.COMPLETED);
@@ -181,6 +179,53 @@ public class AuctionService {
 
         System.out.println("Auction " + auctionId + " 종료 처리 실행!");
     }
+
+    // 일반 경매 종료
+    @Transactional
+    public void endMinorAuction(Long auctionId) {
+        // 경매 불러오기
+        Auction auction = getAuctionEntity(auctionId);
+
+        // 블라인드 입찰 기록에서 최고 입찰자 결정
+        BidHistory highestBid = bidHistoryRepository
+                .findTopByAuctionIdOrderByPriceDescBidTimeAsc(auctionId); // 가격 내림차순, 시간 오름차순
+        Member winner = highestBid != null ? highestBid.getBidder() : null;
+        int winningBid = highestBid != null ? highestBid.getPrice() : 0;
+
+        // 입찰자별 크레딧 처리
+        List<BidHistory> allBids = bidHistoryRepository.findByAuctionId(auctionId, Pageable.unpaged()).getContent();
+        for (BidHistory bid : allBids) {
+            Member bidder = bid.getBidder();
+            int bidPrice = bid.getPrice();
+
+            if (bidder.equals(winner)) {
+                // 승자는 최종 입찰금액 차감
+                bidder.useLockedCredit(bidPrice);
+            } else {
+                // 나머지는 잠금 해제
+                bidder.unlockCredit(bidPrice);
+            }
+            memberRepository.save(bidder);
+        }
+
+        // 경매 상태 완료로 변경
+        auction.setAuctionStatus(AuctionStatus.COMPLETED);
+
+        // 캐시 업데이트
+        updateAuction(auction);
+
+        // 블라인드 경매는 종료 시점에 한 번만 브로드캐스트
+        broadcaster.broadcastAuction(auction);
+
+        // DB 저장
+        auctionRepository.save(auction);
+
+        log.info("소규모 경매 종료 처리 완료: AuctionId={}, Winner={}, Price={}",
+                auctionId,
+                winner != null ? winner.getId() : null,
+                winningBid);
+    }
+
 
     // 마이페이지 판매목록 5개 가져오기
     public List<AuctionResDto> List5SellAuction(Long id) {
@@ -261,7 +306,7 @@ public class AuctionService {
     // 일반 경매 리스트 가져오기
     public Page<AuctionResDto> getMinorList(Pageable pageable) {
 
-        Page<Auction> auction = auctionRepository.findByAuctionType(AuctionType.MINOR, pageable);
+        Page<Auction> auction = auctionRepository.findByAuctionTypeAndAuctionStatus(AuctionType.MINOR, pageable, AuctionStatus.ACTIVE);
         return auction.map(AuctionMapper::convertEntityToAuctionDto);
     }
 
@@ -271,7 +316,7 @@ public class AuctionService {
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
 
-    // 입찰 시퀸스
+    // 입찰 시퀸스(대규모 실시간 경매 용도)
     @Transactional
     public void placeBid(Long auctionId, Long bidderId, int bidAmount) {
 
