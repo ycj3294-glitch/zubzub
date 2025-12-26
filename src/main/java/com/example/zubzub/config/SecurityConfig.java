@@ -15,6 +15,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 @EnableWebSecurity
@@ -34,7 +36,13 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
                 // CORS 설정
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> {
+                    try {
+                        cors.configurationSource(corsConfigurationSource());
+                    } catch (UnknownHostException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 // URL별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         // JWT 없이 접근 가능
@@ -55,9 +63,10 @@ public class SecurityConfig {
 
     // CORS 설정 Bean
     @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+    public CorsConfigurationSource corsConfigurationSource() throws UnknownHostException {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        String ip = InetAddress.getLocalHost().getHostAddress();
+        configuration.setAllowedOrigins(List.of("http://" + ip + ":3000", "http://localhost:3000"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

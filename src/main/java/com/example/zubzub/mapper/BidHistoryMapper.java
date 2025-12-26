@@ -18,8 +18,7 @@ public class BidHistoryMapper {
     public static BidHistoryResDto convertEntityToBidHistoryDto(BidHistory bidHistory) {
         return BidHistoryResDto.builder()
                 .id(bidHistory.getId())
-                .auctionId(bidHistory.getAuction().getId())
-                .bidderId(bidHistory.getBidder().getId())
+                .bidderNickname(bidHistory.getBidder().getNickname())
                 .price(bidHistory.getPrice())
                 .bidTime(bidHistory.getBidTime())
                 .build();

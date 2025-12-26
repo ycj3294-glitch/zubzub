@@ -90,6 +90,17 @@ public class AuctionService {
         return AuctionMapper.convertEntityToAuctionDto(auction);
     }
 
+    // 종료 시간이 가장 가까운 경매를 찾는 로직
+    public AuctionResDto getNearestEndAuction() {
+        Auction auction = auctionRepository
+                .findTopByAuctionStatusOrderByEndTimeAsc(AuctionStatus.ACTIVE)
+                .orElseThrow(() -> new RuntimeException("현재 진행 중인 경매가 없습니다."));
+        return AuctionResDto.from(auction);
+    }
+
+
+
+
     // cache READ
     @Transactional(readOnly = true)
     public Auction getAuctionEntity(Long auctionId) {

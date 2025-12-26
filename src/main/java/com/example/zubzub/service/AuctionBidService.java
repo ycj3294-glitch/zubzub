@@ -4,6 +4,7 @@ import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.*;
 import com.example.zubzub.mapper.BidHistoryMapper;
+import com.example.zubzub.repository.BidHistoryRepository;
 import com.example.zubzub.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.*;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Objects;
+import java.util.Optional;
 
 // 실제 경매 진행에 사용되는 서비스
 @Slf4j
@@ -22,6 +25,7 @@ public class AuctionBidService {
     private final AuctionService auctionService;
     private final AuctionSchedulerService auctionSchedulerService;
     private final BidHistoryService bidHistoryService;
+    private final BidHistoryRepository bidHistoryRepository;
     private final MemberRepository memberRepository;
     private final Broadcaster broadcaster;
 
@@ -72,17 +76,18 @@ public class AuctionBidService {
                 }
             }
 
-            // 이전 최고 입찰자 환불
-            Member prevBidder = auction.getWinner();
-            int prevPrice = auction.getFinalPrice() != 0 ? auction.getFinalPrice() : 0;
-
-            if (prevBidder != null && !prevBidder.equals(bidder)) {
-                prevBidder.unlockCredit(prevPrice);
+            // 동일경매 입찰이라면 이전 입찰 환불
+            if (auction.getWinner() != null){
+                 if(bidder.getId().equals(auction.getWinner().getId())) {
+                    bidder.unlockCredit(auction.getFinalPrice());
+                } else {
+                    auction.getWinner().unlockCredit(auction.getFinalPrice());
+                }
             }
 
             // 현재 입찰자 크레딧 잠금
             bidder.lockCredit(dto.getPrice());
-            log.info("입찰자 : {}, 잠금된 크레딧 : {}", bidder, dto.getPrice());
+            log.info("입찰자 : {}, 잠금된 크레딧 : {}", bidder.getName(), bidder.getLockedCredit());
 
             // 입찰금액, 입찰자 지정
             auction.setFinalPrice(bidHistory.getPrice());
@@ -98,20 +103,36 @@ public class AuctionBidService {
             log.info("Broadcasted auction {}", auction.getId());
         }
 
-        // 마이너 경매(블라인드) 처리
+        // 마이너 경매의 경우
         else if (auction.getAuctionType() == AuctionType.MINOR) {
-            // 현재 입찰자 크레딧 잠금
-            bidder.lockCredit(dto.getPrice());
+            if (bidHistory.getPrice() > auction.getFinalPrice()) {
 
-            // 입찰 기록만 남기고, 경매 금액/승자는 나중에 종료 시점에 처리
-            log.info("블라인드 입찰 기록만 저장: {}", bidHistory);
+                // 동일경매 입찰이라면 이전 입찰 환불
+                Optional<BidHistory> result = bidHistoryRepository.findTopByBidderOrderByBidTimeDesc(bidder);
+                result.ifPresent(history -> bidder.unlockCredit(history.getPrice()));
+
+                // 현재 입찰자 크레딧 잠금
+                bidder.lockCredit(dto.getPrice());
+
+                // 입찰금액, 입찰자 지정
+                auction.setFinalPrice(bidHistory.getPrice());
+                auction.setWinner(bidHistory.getBidder());
+                auction.setBidCount(auction.getBidCount() + 1);
+
+                // 캐시에 경매 정보 업데이트
+                auctionService.updateAuction(auction);
+                log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
+            }
         }
-
-        // 크레딧차감 저장
-        memberRepository.save(bidder);
 
         // 입찰기록만 비동기 DB 저장
         bidHistoryService.saveBidHistoryAsync(bidHistory);
+
+        // 크레딧차감 저장
+        if (auction.getAuctionType() == AuctionType.MAJOR) {
+            memberRepository.save(auction.getWinner());
+        }
+        memberRepository.save(bidder);
 
         return true;
     }

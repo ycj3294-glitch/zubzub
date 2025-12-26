@@ -87,12 +87,12 @@ public class CreateTestData implements CommandLineRunner {
 
         LocalDateTime today = LocalDateTime.now();
 
-        // 🔹 하루에 프리미엄 30개씩, 5일치 생성
-        for (int d = 0; d < 5; d++) {
-            LocalDateTime dayStart = today.minusDays(d);
-            LocalDateTime dayEnd = dayStart.withHour(0).withMinute(59).withSecond(59); // 그 날 끝
+        // 🔹 하루에 프리미엄 5개씩, 앞뒤로 14일치 생성
+        for (int d = 0; d < 14; d++) {
+            LocalDateTime dayStart = today.minusDays(d-7);
+            LocalDateTime dayEnd = dayStart.withHour(23).withMinute(59).withSecond(59); // 그 날 끝
 
-            for (int i = 1; i <= 30; i++) {
+            for (int i = 1; i <= 5; i++) {
                 // 시작 시간은 dayStart ~ dayEnd-2h 범위에서 랜덤
                 long maxStartHour = Math.max(0, dayEnd.getHour() - 2); // 종료시간이 그 날을 넘지 않도록
                 LocalDateTime startTime = dayStart.plusHours(random.nextInt((int) maxStartHour + 1));
@@ -122,8 +122,8 @@ public class CreateTestData implements CommandLineRunner {
         }
 
         // 🔹 일반 경매 150개 랜덤 생성
-        for (int i = 1; i <= 15; i++) {
-            LocalDateTime randomDay = today.minusDays(random.nextInt(5));
+        for (int i = 1; i <= 150; i++) {
+            LocalDateTime randomDay = today.minusDays(random.nextInt(1));
 
             AuctionCreateDto dto = AuctionCreateDto.builder()
                     .auctionType(AuctionType.MINOR)

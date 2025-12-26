@@ -19,7 +19,7 @@ public class AuctionResDto {
 
     private Long sellerId;
 
-    private String sellerNickName;
+    private String sellerNickname;
 
     private String itemName;
 
@@ -45,7 +45,7 @@ public class AuctionResDto {
 
     private Long winnerId;
 
-    private String winnerNickName;
+    private String winnerNickname;
 
     public static AuctionResDto from(Auction auction) {
         return AuctionResDto.builder()
@@ -53,7 +53,7 @@ public class AuctionResDto {
                 .auctionType(auction.getAuctionType())
                 .category(auction.getCategory()) // ✅ String 그대로
                 .sellerId(auction.getSeller().getId())
-                .sellerNickName(auction.getSeller().getNickname())
+                .sellerNickname(auction.getSeller().getNickname())
                 .itemName(auction.getItemName())
                 .itemDesc(auction.getItemDesc())
                 .startPrice(auction.getStartPrice())
@@ -70,7 +70,7 @@ public class AuctionResDto {
                                 ? auction.getWinner().getId()
                                 : null
                 )
-                .winnerNickName(
+                .winnerNickname(
                         auction.getWinner() != null
                                 ? auction.getWinner().getNickname()
                                 : null

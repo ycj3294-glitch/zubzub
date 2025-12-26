@@ -36,6 +36,12 @@ public class AuctionController {
         return ResponseEntity.ok(auctionService.getAuction(id));
     }
 
+    // 가장 임박한 경매 보기
+    @GetMapping("/nearest-end")
+    public ResponseEntity<AuctionResDto> getNearestEndAuction() {
+        return ResponseEntity.ok(auctionService.getNearestEndAuction());
+    }
+
     // 경매 생성
     @PostMapping()
     public ResponseEntity<Void> createAuction(@RequestBody AuctionCreateDto dto) {

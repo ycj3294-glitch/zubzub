@@ -59,6 +59,10 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
             Pageable pageable
     );
 
+    // 종료시간이 가장 가까운 경매 보기
+    Optional<Auction> findTopByAuctionStatusOrderByEndTimeAsc(AuctionStatus status);
+
+
 
 
 }
