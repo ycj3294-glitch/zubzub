@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -388,6 +389,25 @@ public class AuctionService {
     public Page<AuctionResDto> search(String keyword, Pageable pageable) {
         return auctionRepository.searchByKeyword(keyword, pageable)
                 .map(AuctionResDto::from);
+    }
+
+    // 경매 일정 월 데이터 가져오기
+    public List<AuctionResDto> getMajorAuctionsForCalendar(int year, int month) {
+
+        LocalDate monthDate = LocalDate.of(year, month, 1);
+
+        LocalDateTime monthStart = monthDate.atStartOfDay();
+        LocalDateTime monthEnd = monthDate
+                .withDayOfMonth(monthDate.lengthOfMonth())
+                .atTime(23, 59, 59);
+
+        List<Auction> auctions =
+                auctionRepository.findByAuctionTypeAndStartTimeBetween(
+                        AuctionType.MAJOR,
+                        monthStart,
+                        monthEnd
+                );
+        return auctions.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
 }
 
