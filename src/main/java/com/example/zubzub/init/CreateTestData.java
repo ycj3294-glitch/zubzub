@@ -57,6 +57,7 @@ public class CreateTestData implements CommandLineRunner {
         ad.setMemberStatus("ACTIVE");
         memberRepository.save(ad);
 
+
         // ===============================
         // 1️⃣ 회원 10명 생성
         // ===============================
