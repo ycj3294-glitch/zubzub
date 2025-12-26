@@ -145,8 +145,8 @@ public class CreateTestData implements CommandLineRunner {
                     .startPrice(10000 + random.nextInt(99000))
                     .minBidUnit(100)
                     .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
-                    .startTime(randomDay.minusHours(random.nextInt(24)))
-                    .endTime(randomDay.plusHours(random.nextInt(72)))
+                    .startTime(baseDay.minusHours(random.nextInt(24)))
+                    .endTime(baseDay.plusHours(random.nextInt(72)))
                     .build();
 
             auctionService.createAuction(dto);
