@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -46,6 +48,17 @@ public interface AuctionRepository extends JpaRepository<Auction, Long> {
     // AuctionStatus로 조회
     @EntityGraph(attributePaths = {"seller", "winner"})
     List<Auction> findByAuctionStatus(AuctionStatus status);
+
+    @Query("""
+    select a from Auction a
+    where lower(a.itemName) like lower(concat('%', :keyword, '%'))
+       or lower(a.category) like lower(concat('%', :keyword, '%'))
+""")
+    Page<Auction> searchByKeyword(
+            @Param("keyword") String keyword,
+            Pageable pageable
+    );
+
 
 
 }

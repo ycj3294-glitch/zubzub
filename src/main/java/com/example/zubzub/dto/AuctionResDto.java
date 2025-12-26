@@ -1,6 +1,8 @@
 package com.example.zubzub.dto;
 
+import com.example.zubzub.entity.Auction;
 import com.example.zubzub.entity.AuctionType;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -44,4 +46,38 @@ public class AuctionResDto {
     private Long winnerId;
 
     private String winnerNickName;
+
+    public static AuctionResDto from(Auction auction) {
+        return AuctionResDto.builder()
+                .id(auction.getId())
+                .auctionType(auction.getAuctionType())
+                .category(auction.getCategory()) // ✅ String 그대로
+                .sellerId(auction.getSeller().getId())
+                .sellerNickName(auction.getSeller().getNickname())
+                .itemName(auction.getItemName())
+                .itemDesc(auction.getItemDesc())
+                .startPrice(auction.getStartPrice())
+                .finalPrice(auction.getFinalPrice())
+                .minBidUnit(auction.getMinBidUnit())
+                .bidCount(auction.getBidCount())
+                .itemImg(auction.getItemImg())
+                .auctionStatus(auction.getAuctionStatus().name()) // ✅ enum → String
+                .startTime(auction.getStartTime())
+                .endTime(auction.getEndTime())
+                .extendedEndTime(auction.getExtendedEndTime())
+                .winnerId(
+                        auction.getWinner() != null
+                                ? auction.getWinner().getId()
+                                : null
+                )
+                .winnerNickName(
+                        auction.getWinner() != null
+                                ? auction.getWinner().getNickname()
+                                : null
+                )
+                .build();
+    }
+
+
+
 }

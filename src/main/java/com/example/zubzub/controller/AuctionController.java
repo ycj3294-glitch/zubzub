@@ -127,4 +127,14 @@ public class AuctionController {
         LocalDateTime end = yearMonth.atEndOfMonth().atTime(23, 59, 59); // 12월 마지막 날 23:59:59
         return ResponseEntity.ok(auctionService.getMajorList(start, end));
     }
+
+    // 경매 검색
+    @GetMapping("/search")
+    public Page<AuctionResDto> searchAuctions(
+            @RequestParam String keyword,
+            Pageable pageable
+    ) {
+        return auctionService.search(keyword, pageable);
+    }
+
 }

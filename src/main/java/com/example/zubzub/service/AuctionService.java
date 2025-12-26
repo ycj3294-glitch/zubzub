@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AuctionService {
 
     private final AuctionRepository auctionRepository;
@@ -383,5 +384,11 @@ public class AuctionService {
         return auction.stream().map(AuctionMapper::convertEntityToAuctionDto).toList();
     }
 
-
+    // 헤더 검색 서비스
+    public Page<AuctionResDto> search(String keyword, Pageable pageable) {
+        return auctionRepository.searchByKeyword(keyword, pageable)
+                .map(AuctionResDto::from);
+    }
 }
+
+
