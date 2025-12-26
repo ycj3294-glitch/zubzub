@@ -8,7 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class BidHistoryCreateDto {
-    private Long auctionId;
     private Long bidderId;
     private int price;
 }

@@ -28,7 +28,7 @@ public class MemberResDto {
         this.name = member.getName();
         this.nickname = member.getNickname();
         this.profileImg = member.getProfileImg();
-        this.credit = member.getCredit();
+        this.credit = member.getAvailableCredit();
         this.isAdmin = member.isAdmin();
         this.memberStatus = member.getMemberStatus();
         this.createdAt = member.getCreatedAt();

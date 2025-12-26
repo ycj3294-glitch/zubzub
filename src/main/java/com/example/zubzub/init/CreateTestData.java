@@ -41,7 +41,7 @@ public class CreateTestData implements CommandLineRunner {
         me.setName("이용현");
         me.setNickname("이용현");
         me.setAddr("서울시 강남구");
-        me.setCredit(random.nextInt(5000));
+        me.setCredit(50000000 + random.nextInt(5000));
         me.setAdmin(false);
         me.setMemberStatus("ACTIVE");
         memberRepository.save(me);
@@ -104,9 +104,9 @@ public class CreateTestData implements CommandLineRunner {
                         .sellerId(1 + random.nextLong(members.size()))
                         .itemName("프리미엄 " + items[random.nextInt(items.length)] + " " + i)
                         .itemDesc("설명 " + i)
-                        .startPrice(10000 + random.nextInt(990000))
+                        .startPrice(10000 + random.nextInt(99000))
                         .minBidUnit(100)
-                        .itemImg("") // 필요시 랜덤 이미지나 기본값 지정
+                        .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
                         .startTime(startTime)
                         .endTime(endTime)
                         .build();
@@ -131,9 +131,9 @@ public class CreateTestData implements CommandLineRunner {
                     .sellerId(1 + random.nextLong(members.size()))
                     .itemName("일반 " + items[random.nextInt(items.length)] + " " + i)
                     .itemDesc("설명 " + i)
-                    .startPrice(10000 + random.nextInt(990000))
+                    .startPrice(10000 + random.nextInt(99000))
                     .minBidUnit(100)
-                    .itemImg("") // 필요시 랜덤 이미지나 기본값 지정
+                    .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
                     .startTime(randomDay.minusHours(random.nextInt(24)))
                     .endTime(randomDay.plusHours(random.nextInt(72)))
                     .build();

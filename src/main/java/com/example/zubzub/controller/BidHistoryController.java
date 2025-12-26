@@ -27,5 +27,4 @@ public class BidHistoryController {
             Pageable pageable) {
         return ResponseEntity.ok(bidHistoryService.findByAuctionId(auctionId, pageable));
     }
-
 }

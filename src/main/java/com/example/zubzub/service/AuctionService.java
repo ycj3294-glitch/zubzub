@@ -45,6 +45,8 @@ public class AuctionService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
         Auction auction = AuctionMapper.convertAuctionDtoToEntity(dto, seller);
 
+        auction.setBidCount(0);
+
         // 메이저에서 임시 시작 종료시간 넣기
         if (auction.getAuctionType() == AuctionType.MAJOR) {
             auction.setStartTime(LocalDateTime.of(9999, 12, 31, 23, 59, 59));
@@ -83,8 +85,7 @@ public class AuctionService {
 
     // READ (단건 조회)
     public AuctionResDto getAuction(Long auctionId) {
-        Auction auction = auctionRepository.findById(auctionId)
-                .orElseThrow(() -> new IllegalArgumentException("Auction not found: " + auctionId));
+        Auction auction = getAuctionEntity(auctionId);
         return AuctionMapper.convertEntityToAuctionDto(auction);
     }
 

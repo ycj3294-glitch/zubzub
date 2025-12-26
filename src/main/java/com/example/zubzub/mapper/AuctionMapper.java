@@ -38,6 +38,7 @@ public class AuctionMapper {
                 .startTime(auction.getStartTime())
                 .endTime(auction.getEndTime())
                 .minBidUnit(auction.getMinBidUnit())
+                .bidCount(auction.getBidCount())
                 .extendedEndTime(auction.getExtendedEndTime())
                 .winnerId(auction.getWinner() != null ? auction.getWinner().getId() : null)
                 .winnerNickName(auction.getWinner() != null ? auction.getWinner().getNickname() : null)

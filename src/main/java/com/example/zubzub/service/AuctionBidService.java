@@ -5,6 +5,7 @@ import com.example.zubzub.dto.BidHistoryCreateDto;
 import com.example.zubzub.entity.*;
 import com.example.zubzub.mapper.BidHistoryMapper;
 import com.example.zubzub.repository.MemberRepository;
+import jakarta.transaction.Transactional;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.quartz.*;
@@ -81,10 +82,12 @@ public class AuctionBidService {
 
             // 현재 입찰자 크레딧 잠금
             bidder.lockCredit(dto.getPrice());
+            log.info("입찰자 : {}, 잠금된 크레딧 : {}", bidder, dto.getPrice());
 
             // 입찰금액, 입찰자 지정
             auction.setFinalPrice(bidHistory.getPrice());
             auction.setWinner(bidHistory.getBidder());
+            auction.setBidCount(auction.getBidCount() + 1);
 
             // 캐시에 경매 정보 업데이트
             auctionService.updateAuction(auction);
@@ -105,12 +108,16 @@ public class AuctionBidService {
                 // 입찰금액, 입찰자 지정
                 auction.setFinalPrice(bidHistory.getPrice());
                 auction.setWinner(bidHistory.getBidder());
+                auction.setBidCount(auction.getBidCount() + 1);
 
                 // 캐시에 경매 정보 업데이트
                 auctionService.updateAuction(auction);
                 log.info("Updated cache for auction {} with bid {}", auction.getId(), bidHistory);
             }
         }
+
+        // 크레딧차감 저장
+        memberRepository.save(bidder);
 
         // 입찰기록만 비동기 DB 저장
         bidHistoryService.saveBidHistoryAsync(bidHistory);

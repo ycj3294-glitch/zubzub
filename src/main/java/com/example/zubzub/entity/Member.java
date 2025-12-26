@@ -107,6 +107,8 @@ public class Member {
 
     // 남은 사용 가능한 크레딧 조회
     public int getAvailableCredit() {
+        System.out.println("크레딧조회함 : " + credit);
+        System.out.println("잠긴크레딧 : " + lockedCredit);
         return credit - lockedCredit;
     }
 }

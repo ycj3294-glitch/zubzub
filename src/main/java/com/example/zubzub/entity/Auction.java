@@ -48,6 +48,9 @@ public class Auction {
     private int minBidUnit;
 
     @Column(nullable = false)
+    private int bidCount;
+
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
     @Column(nullable = false)

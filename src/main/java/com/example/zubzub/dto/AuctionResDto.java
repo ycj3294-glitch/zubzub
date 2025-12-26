@@ -29,6 +29,8 @@ public class AuctionResDto {
 
     private int minBidUnit;
 
+    private int bidCount;
+
     private String itemImg;
 
     private String auctionStatus;
