@@ -57,6 +57,7 @@ public class AuctionController {
     // 경매에 입찰하기
     @PostMapping("/{id}/bids")
     public ResponseEntity<Void> placeBid(@PathVariable Long id, @RequestBody BidHistoryCreateDto dto) {
+        log.info("입찰 컨트롤러 들어온 ID : {}, 입찰 컨트롤러 들어온 dto : {}", id, dto);
         auctionBidService.placeBid(id, dto);
         return ResponseEntity.ok().build();
     }

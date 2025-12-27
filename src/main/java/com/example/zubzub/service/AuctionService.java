@@ -205,6 +205,10 @@ public class AuctionService {
         Member winner = highestBid != null ? highestBid.getBidder() : null;
         int winningBid = highestBid != null ? highestBid.getPrice() : 0;
 
+        // winner, finalprice 갱신
+        auction.setWinner(winner);
+        auction.setFinalPrice(winningBid);
+
         // 입찰자별 크레딧 처리
         List<BidHistory> allBids = bidHistoryRepository.findByAuctionId(auctionId, Pageable.unpaged()).getContent();
         for (BidHistory bid : allBids) {

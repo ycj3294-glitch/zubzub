@@ -2,7 +2,9 @@ package com.example.zubzub.service;
 
 import com.example.zubzub.component.Broadcaster;
 import com.example.zubzub.dto.BidHistoryCreateDto;
+import com.example.zubzub.dto.BidHistoryResDto;
 import com.example.zubzub.entity.*;
+import com.example.zubzub.mapper.AuctionMapper;
 import com.example.zubzub.mapper.BidHistoryMapper;
 import com.example.zubzub.repository.BidHistoryRepository;
 import com.example.zubzub.repository.MemberRepository;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -108,15 +111,15 @@ public class AuctionBidService {
             if (bidHistory.getPrice() > auction.getFinalPrice()) {
 
                 // 동일경매 입찰이라면 이전 입찰 환불
-                Optional<BidHistory> result = bidHistoryRepository.findTopByBidderOrderByBidTimeDesc(bidder);
+                Optional<BidHistory> result = bidHistoryRepository.findTopByBidderAndAuctionOrderByBidTimeDesc(bidder, auction);
                 result.ifPresent(history -> bidder.unlockCredit(history.getPrice()));
 
                 // 현재 입찰자 크레딧 잠금
                 bidder.lockCredit(dto.getPrice());
-
+                log.info("현재 입찰자 : {}, 크레딧 잠금 : {}", dto.getBidderId(), dto.getPrice());
                 // 입찰금액, 입찰자 지정
-                auction.setFinalPrice(bidHistory.getPrice());
-                auction.setWinner(bidHistory.getBidder());
+//                auction.setFinalPrice(bidHistory.getPrice());
+//                auction.setWinner(bidHistory.getBidder());
                 auction.setBidCount(auction.getBidCount() + 1);
 
                 // 캐시에 경매 정보 업데이트
@@ -135,5 +138,12 @@ public class AuctionBidService {
         memberRepository.save(bidder);
 
         return true;
+    }
+
+    // 해당 경매 입찰 기록 가져오기
+    public BidHistoryResDto getPresentBidHistory(Long auctionId, Long bidderId) {
+        BidHistory bidHistory = bidHistoryRepository.findTopByAuctionIdAndBidderIdOrderByBidTimeDesc(auctionId, bidderId)
+        .orElseThrow(() -> new IllegalArgumentException("입찰기록이 존재하지 않습니다."));
+        return BidHistoryMapper.convertEntityToBidHistoryDto(bidHistory);
     }
 }

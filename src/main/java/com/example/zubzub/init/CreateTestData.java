@@ -52,7 +52,7 @@ public class CreateTestData implements CommandLineRunner {
         ad.setName("양찬종");
         ad.setNickname("Y");
         ad.setAddr("서울시");
-        ad.setCredit(random.nextInt(5000));
+        ad.setCredit(50000000 + random.nextInt(5000));
         ad.setAdmin(true);
         ad.setMemberStatus("ACTIVE");
         memberRepository.save(ad);
