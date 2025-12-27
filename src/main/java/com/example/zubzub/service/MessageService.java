@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,30 +38,37 @@ public class MessageService {
     }
 
     @Transactional(readOnly = true)
-    public Page<MessageResDto> getReceivedMessages(Long id, Pageable pageable) {
-        Page<Message> messages = messageRepository.findByReceiverId(id, pageable);
+    public Page<MessageResDto> getReceivedMessages(Long receiverId, Pageable pageable) {
+        Page<Message> messages = messageRepository.findByReceiverId(receiverId, pageable);
         return messages.map(MessageMapper::convertEntityToMessageDto);
     }
 
     @Transactional(readOnly = true)
     public MessageResDto getMessage(Long id, Long receiverId) {
-        Message message =  messageRepository.findByIdAndReceiverId(id, receiverId)
+        Message message =  messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
+        if (!message.getReceiver().getId().equals(receiverId))
+            throw new AccessDeniedException("나에게 온 메시지가 아닙니다");
         return MessageMapper.convertEntityToMessageDto(message);
     }
 
     @Transactional
     public void readMessage(Long id, Long receiverId) {
-        Message message =  messageRepository.findByIdAndReceiverId(id, receiverId)
+        Message message =  messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
+        if (!message.getReceiver().getId().equals(receiverId))
+            throw new AccessDeniedException("나에게 온 메시지가 아닙니다");
+        log.info("메시지읽음 : {}", message.getTitle());
         message.setRead(true);
         messageRepository.save(message);
     }
 
     @Transactional
     public void deleteMessage(Long id, Long receiverId) {
-        Message message = messageRepository.findByIdAndReceiverId(id, receiverId)
+        Message message = messageRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("메시지를 찾을 수 없습니다"));
+        if (!message.getReceiver().getId().equals(receiverId))
+            throw new AccessDeniedException("나에게 온 메시지가 아닙니다");
         message.setDeleted(true);
         messageRepository.save(message);
 

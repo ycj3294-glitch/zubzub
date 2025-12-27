@@ -12,8 +12,4 @@ import java.util.Optional;
 public interface MessageRepository extends JpaRepository<Message, Long> {
     // 받는사람 id로 message 내역 조회(페이지네이션)
     Page<Message> findByReceiverId(Long id, Pageable pageable);
-
-    Optional<Message> findByIdAndReceiverId(Long id, Long receiverId);
-
-    void deleteByIdAndReceiverId(Long id, Long receiverId);
 }
