@@ -94,7 +94,7 @@ public class AuctionService {
     // 종료 시간이 가장 가까운 경매를 찾는 로직
     public AuctionResDto getNearestEndAuction() {
         Auction auction = auctionRepository
-                .findTopByAuctionStatusOrderByEndTimeAsc(AuctionStatus.ACTIVE)
+                .findTopByAuctionStatusAndAuctionTypeOrderByEndTimeAsc(AuctionStatus.ACTIVE, AuctionType.MAJOR)
                 .orElseThrow(() -> new RuntimeException("현재 진행 중인 경매가 없습니다."));
         return AuctionResDto.from(auction);
     }
