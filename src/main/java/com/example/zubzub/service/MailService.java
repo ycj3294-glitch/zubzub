@@ -30,7 +30,7 @@ public class MailService {
         message.setTo(toEmail);
         message.setSubject("인증번호 확인");
         message.setText("인증용 코드: " + code);
-        message.setFrom("zubzubpq@gmail.com");
+        message.setFrom("bureum66@gmail.com");
 
         mailSender.send(message);
         return code;
@@ -45,7 +45,7 @@ public class MailService {
             helper.setTo(toEmail);
             helper.setSubject("인증번호");
             helper.setText("<h1>인증번호</h1><p>인증번호: <b>" + code + "</b></p>", true);
-            helper.setFrom("zubzubpq@gmail.com");
+            helper.setFrom("bureum66@gmail.com");
 
             mailSender.send(message);
         } catch (MessagingException e) {
