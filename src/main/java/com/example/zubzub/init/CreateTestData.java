@@ -79,104 +79,127 @@ public class CreateTestData implements CommandLineRunner {
         as.setMemberStatus("ACTIVE");
         memberRepository.save(as);
 
+        Member an = new Member();
+        an.setEmail("55029564a@gmail.com");
+        an.setPwd(passwordEncoder.encode("xotn5502"));
+        an.setName("이태수");
+        an.setNickname("Lee12");
+        an.setAddr("서울시");
+        an.setCredit(50000000 + random.nextInt(5000));
+        an.setAdmin(true);
+        an.setMemberStatus("ACTIVE");
+        memberRepository.save(an);
+
+        Member at = new Member();
+        at.setEmail("bureum66@gamil.com");
+        at.setPwd(passwordEncoder.encode("dlqnfma1@"));
+        at.setName("이부름");
+        at.setNickname("현현현현");
+        at.setAddr("서울시");
+        at.setCredit(50000000 + random.nextInt(5000));
+        at.setAdmin(true);
+        at.setMemberStatus("ACTIVE");
+        memberRepository.save(as);
+
+
         // ===============================
         // 1️⃣ 회원 10명 생성
         // ===============================
-        List<Member> members = new ArrayList<>();
-        for (int i = 1; i <= 10; i++) {
-            Member member = new Member();
-            member.setEmail("user" + i + "@example.com");
-            member.setPwd("password" + i);
-            member.setName("회원" + i);
-            member.setNickname("nick" + i);
-            member.setAddr("서울시 강남구 " + i + "번지");
-            member.setCredit(random.nextInt(5000));
-            member.setAdmin(i == 1);
-            member.setMemberStatus("ACTIVE");
-            members.add(member);
-        }
-        memberRepository.saveAll(members);
-        memberRepository.flush();
+//        List<Member> members = new ArrayList<>();
+//        for (int i = 1; i <= 10; i++) {
+//            Member member = new Member();
+//            member.setEmail("user" + i + "@example.com");
+//            member.setPwd("password" + i);
+//            member.setName("회원" + i);
+//            member.setNickname("nick" + i);
+//            member.setAddr("서울시 강남구 " + i + "번지");
+//            member.setCredit(random.nextInt(5000));
+//            member.setAdmin(i == 1);
+//            member.setMemberStatus("ACTIVE");
+//            members.add(member);
+//        }
+//        memberRepository.saveAll(members);
+//        memberRepository.flush();
+//
+//        System.out.println("✅ 회원 10명 생성 완료");
+//
+//        // ===============================
+//        // 2️⃣ 경매 생성
+//        // ===============================
+//        int auctionCount = 0;
+//        String[] categories = {"ELECTRONICS", "BOOK", "GAME", "FURNITURE", "CLOTHES"};
+//        String[] items = {"아이폰", "닌텐도", "책", "의자", "셔츠", "노트북", "마우스"};
+//
+//        LocalDateTime today = LocalDateTime.now();
+//
+//        // 🔹 하루에 프리미엄 3개씩, 5일치 생성
+//        for (int d = 0; d < 5; d++) {
+//
+//            // 해당 날짜의 시작 (00:00:00)
+//            LocalDateTime dayStart = today.minusDays(d)
+//                    .withHour(0).withMinute(0).withSecond(0);
+//
+//            // 해당 날짜의 끝 (23:59:59)
+//            LocalDateTime dayEnd = dayStart
+//                    .withHour(23).withMinute(59).withSecond(59);
+//
+//            for (int i = 1; i <= 3; i++) {
+//
+//                // startTime은 0시 ~ 21시 사이 (2시간 경매 보장)
+//                int startHour = random.nextInt(22); // 0~21
+//                LocalDateTime startTime = dayStart.plusHours(startHour);
+//
+//                LocalDateTime endTime = startTime.plusHours(2); // 항상 같은 날 안
+//
+//                AuctionCreateDto dto = AuctionCreateDto.builder()
+//                        .auctionType(AuctionType.MAJOR)
+//                        .category(categories[random.nextInt(categories.length)])
+//                        .sellerId(1 + random.nextLong(members.size()))
+//                        .itemName("프리미엄 " + items[random.nextInt(items.length)] + " " + i)
+//                        .itemDesc("설명 " + i)
+//                        .startPrice(10000 + random.nextInt(99000))
+//                        .minBidUnit(100)
+//                        .itemImg("http://placehold.co/600x400")
+//                        .startTime(startTime)
+//                        .endTime(endTime)
+//                        .build();
+//
+//                AuctionResDto resDto = auctionService.createAuction(dto);
+//                auctionService.approveAuction(resDto.getId());
+//                auctionService.setTime(resDto.getId(), startTime, endTime);
+//
+//                auctionCount++;
+//            }
+//        }
+//
+//        // 🔹 일반 경매 15개 랜덤 생성
+//        for (int i = 1; i <= 15; i++) {
+//
+//            LocalDateTime baseDay = today.minusDays(random.nextInt(5))
+//                    .withHour(0).withMinute(0).withSecond(0);
+//
+//            LocalDateTime startTime = baseDay.plusHours(random.nextInt(24));
+//            LocalDateTime endTime = startTime.plusHours(1 + random.nextInt(72)); // 최소 1시간
+//
+//            AuctionCreateDto dto = AuctionCreateDto.builder()
+//                    .auctionType(AuctionType.MINOR)
+//                    .category(categories[random.nextInt(categories.length)])
+//                    .sellerId(1 + random.nextLong(members.size()))
+//                    .itemName("일반 " + items[random.nextInt(items.length)] + " " + i)
+//                    .itemDesc("설명 " + i)
+//                    .startPrice(10000 + random.nextInt(99000))
+//                    .minBidUnit(100)
+//                    .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
+//                    .startTime(baseDay.minusHours(random.nextInt(24)))
+//                    .endTime(baseDay.plusHours(random.nextInt(72)))
+//                    .build();
+//
+//            auctionService.createAuction(dto);
+//
+//            auctionCount++;
+//        }
 
-        System.out.println("✅ 회원 10명 생성 완료");
-
-        // ===============================
-        // 2️⃣ 경매 생성
-        // ===============================
-        int auctionCount = 0;
-        String[] categories = {"ELECTRONICS", "BOOK", "GAME", "FURNITURE", "CLOTHES"};
-        String[] items = {"아이폰", "닌텐도", "책", "의자", "셔츠", "노트북", "마우스"};
-
-        LocalDateTime today = LocalDateTime.now();
-
-        // 🔹 하루에 프리미엄 3개씩, 5일치 생성
-        for (int d = 0; d < 5; d++) {
-
-            // 해당 날짜의 시작 (00:00:00)
-            LocalDateTime dayStart = today.minusDays(d)
-                    .withHour(0).withMinute(0).withSecond(0);
-
-            // 해당 날짜의 끝 (23:59:59)
-            LocalDateTime dayEnd = dayStart
-                    .withHour(23).withMinute(59).withSecond(59);
-
-            for (int i = 1; i <= 3; i++) {
-
-                // startTime은 0시 ~ 21시 사이 (2시간 경매 보장)
-                int startHour = random.nextInt(22); // 0~21
-                LocalDateTime startTime = dayStart.plusHours(startHour);
-
-                LocalDateTime endTime = startTime.plusHours(2); // 항상 같은 날 안
-
-                AuctionCreateDto dto = AuctionCreateDto.builder()
-                        .auctionType(AuctionType.MAJOR)
-                        .category(categories[random.nextInt(categories.length)])
-                        .sellerId(1 + random.nextLong(members.size()))
-                        .itemName("프리미엄 " + items[random.nextInt(items.length)] + " " + i)
-                        .itemDesc("설명 " + i)
-                        .startPrice(10000 + random.nextInt(99000))
-                        .minBidUnit(100)
-                        .itemImg("http://placehold.co/600x400")
-                        .startTime(startTime)
-                        .endTime(endTime)
-                        .build();
-
-                AuctionResDto resDto = auctionService.createAuction(dto);
-                auctionService.approveAuction(resDto.getId());
-                auctionService.setTime(resDto.getId(), startTime, endTime);
-
-                auctionCount++;
-            }
-        }
-
-        // 🔹 일반 경매 15개 랜덤 생성
-        for (int i = 1; i <= 15; i++) {
-
-            LocalDateTime baseDay = today.minusDays(random.nextInt(5))
-                    .withHour(0).withMinute(0).withSecond(0);
-
-            LocalDateTime startTime = baseDay.plusHours(random.nextInt(24));
-            LocalDateTime endTime = startTime.plusHours(1 + random.nextInt(72)); // 최소 1시간
-
-            AuctionCreateDto dto = AuctionCreateDto.builder()
-                    .auctionType(AuctionType.MINOR)
-                    .category(categories[random.nextInt(categories.length)])
-                    .sellerId(1 + random.nextLong(members.size()))
-                    .itemName("일반 " + items[random.nextInt(items.length)] + " " + i)
-                    .itemDesc("설명 " + i)
-                    .startPrice(10000 + random.nextInt(99000))
-                    .minBidUnit(100)
-                    .itemImg("http://placehold.co/600x400") // 필요시 랜덤 이미지나 기본값 지정
-                    .startTime(baseDay.minusHours(random.nextInt(24)))
-                    .endTime(baseDay.plusHours(random.nextInt(72)))
-                    .build();
-
-            auctionService.createAuction(dto);
-
-            auctionCount++;
-        }
-
-        System.out.println("✅ 경매 " + auctionCount + "개 생성 완료");
-        System.out.println("✅ 테스트 데이터 입력 완료!");
+//        System.out.println("✅ 경매 " + auctionCount + "개 생성 완료");
+        System.out.println("✅ 테스트 계정 입력 완료!");
     }
 }
