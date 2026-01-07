@@ -10,7 +10,7 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    private static final String SECRET_KEY = "your-512-bit-secret-your-512-bit-secret-your-512-bit-secret-your-512-bit-secret"; // 512bit
+    private static final String SECRET_KEY = "nZr4u7x!A%C*F-JaNdRgUkXp2s5v8y/B?E(G+KbPeShVmYq3t6w9z$C&F)J@McQf"; // 512bit
     private static final long SIGNUP_EXPIRATION = 1000 * 60 * 5; // 5분
     private static final long LOGIN_EXPIRATION = 1000 * 60 * 30;//1분, 30분
     private static final long REFRESH_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 7일
